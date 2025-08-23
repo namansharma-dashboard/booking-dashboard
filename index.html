@@ -1279,7 +1279,7 @@
 
             if (!filteredData.supplierData) return;
 
-            // Get suppliers based on filter
+            // Get suppliers based on intelligent filter logic
             let suppliersToShow = [];
             const supplierTotals = Object.entries(filteredData.supplierTotals)
                 .filter(([name]) => filteredData.suppliers.includes(name))
@@ -1293,26 +1293,45 @@
                     suppliersToShow = supplierTotals.slice(0, 10).map(([name]) => name);
                     break;
                 case 'growing':
-                    // Show suppliers with growth in recent days
-                    const recent = filteredData.dates.slice(-7);
-                    const older = filteredData.dates.slice(-14, -7);
-                    suppliersToShow = filteredData.suppliers.filter(supplier => {
-                        const recentSum = recent.reduce((sum, date) => sum + (filteredData.supplierData[supplier][date]?.bookings || 0), 0);
-                        const olderSum = older.reduce((sum, date) => sum + (filteredData.supplierData[supplier][date]?.bookings || 0), 0);
-                        return recentSum > olderSum;
-                    }).slice(0, 10);
+                    // Intelligent growth detection - suppliers with positive trend
+                    suppliersToShow = supplierTotals
+                        .filter(([name, data]) => {
+                            const growth = calculateGrowthRate(name);
+                            return growth > 0.02 && data.bookings > 100; // At least 2% growth and meaningful volume
+                        })
+                        .slice(0, 10)
+                        .map(([name]) => name);
                     break;
                 case 'volatile':
-                    // Show suppliers with high variance
-                    suppliersToShow = filteredData.suppliers.filter(supplier => {
-                        const values = filteredData.dates.map(date => filteredData.supplierData[supplier][date]?.bookings || 0);
-                        const avg = values.reduce((sum, val) => sum + val, 0) / values.length;
-                        const variance = values.reduce((sum, val) => sum + Math.pow(val - avg, 2), 0) / values.length;
-                        return variance > 100 && avg > 10;
-                    }).slice(0, 10);
+                    // Suppliers with high variance in daily bookings
+                    suppliersToShow = supplierTotals
+                        .filter(([name, data]) => {
+                            const consistency = calculateConsistency(name);
+                            return consistency < 0.5 && data.bookings > 200; // Low consistency, decent volume
+                        })
+                        .slice(0, 8)
+                        .map(([name]) => name);
                     break;
                 default:
-                    suppliersToShow = supplierTotals.slice(0, 15).map(([name]) => name);
+                    // Smart selection: mix of top performers and interesting patterns
+                    const topPerformers = supplierTotals.slice(0, 5).map(([name]) => name);
+                    const growingSuppliers = supplierTotals
+                        .filter(([name, data]) => calculateGrowthRate(name) > 0.05 && !topPerformers.includes(name))
+                        .slice(0, 3)
+                        .map(([name]) => name);
+                    const volatileSuppliers = supplierTotals
+                        .filter(([name, data]) => {
+                            const consistency = calculateConsistency(name);
+                            return consistency < 0.4 && data.bookings > 300 && !topPerformers.includes(name) && !growingSuppliers.includes(name);
+                        })
+                        .slice(0, 2)
+                        .map(([name]) => name);
+                    
+                    suppliersToShow = [...topPerformers, ...growingSuppliers, ...volatileSuppliers];
+            }
+
+            if (suppliersToShow.length === 0) {
+                suppliersToShow = supplierTotals.slice(0, 5).map(([name]) => name);
             }
 
             const colors = [
@@ -1321,15 +1340,41 @@
                 '#f43f5e', '#8b5cf6', '#06b6d4', '#84cc16', '#f97316'
             ];
 
-            const datasets = suppliersToShow.map((supplier, index) => ({
-                label: supplier,
-                data: filteredData.dates.map(date => filteredData.supplierData[supplier][date]?.bookings || 0),
-                borderColor: colors[index % colors.length],
-                backgroundColor: colors[index % colors.length] + '20',
-                borderWidth: 2,
-                fill: false,
-                tension: 0.1
-            }));
+            const datasets = suppliersToShow.map((supplier, index) => {
+                const data = filteredData.dates.map(date => filteredData.supplierData[supplier][date]?.bookings || 0);
+                const growth = calculateGrowthRate(supplier);
+                const consistency = calculateConsistency(supplier);
+                
+                // Adjust line style based on characteristics
+                let borderDash = undefined;
+                let borderWidth = 2;
+                
+                if (growth > 0.05) {
+                    borderWidth = 3; // Thicker line for growing suppliers
+                }
+                if (consistency < 0.5) {
+                    borderDash = [5, 5]; // Dashed line for volatile suppliers
+                }
+                
+                return {
+                    label: `${supplier} ${growth > 0.05 ? '📈' : ''} ${consistency < 0.5 ? '⚡' : ''}`,
+                    data: data,
+                    borderColor: colors[index % colors.length],
+                    backgroundColor: colors[index % colors.length] + '20',
+                    borderWidth: borderWidth,
+                    borderDash: borderDash,
+                    fill: false,
+                    tension: 0.1
+                };
+            });
+
+            const title = {
+                'all': 'Intelligent Trend Analysis: Top Performers + Growth + Volatility',
+                'top5': 'Top 5 Performers by Total Volume',
+                'top10': 'Top 10 Performers by Total Volume', 
+                'growing': 'Growing Suppliers (>2% Weekly Growth)',
+                'volatile': 'Volatile Suppliers (High Variance Patterns)'
+            };
 
             charts.trends = new Chart(ctx, {
                 type: 'line',
@@ -1352,8 +1397,12 @@
                             position: 'top',
                             labels: {
                                 boxWidth: 12,
-                                font: { size: 11 }
+                                font: { size: 10 }
                             }
+                        },
+                        title: {
+                            display: true,
+                            text: title[currentFilter]
                         }
                     },
                     scales: {
@@ -1369,6 +1418,8 @@
             });
         }
 
+        let currentPredictionType = '7days';
+        
         function createPredictionsChart() {
             const ctx = document.getElementById('predictionsChart').getContext('2d');
             
@@ -1378,31 +1429,76 @@
 
             if (!filteredData.dailyTotals) return;
 
-            // Simple prediction based on recent trend
-            const recentDays = filteredData.dates.slice(-14);
+            switch (currentPredictionType) {
+                case '7days':
+                    createNext7DaysPrediction(ctx);
+                    break;
+                case 'trends':
+                    createGrowthTrendsAnalysis(ctx);
+                    break;
+                case 'seasonal':
+                    createSeasonalAnalysis(ctx);
+                    break;
+            }
+        }
+
+        function createNext7DaysPrediction(ctx) {
+            // Use last 21 days for better prediction accuracy
+            const recentDays = filteredData.dates.slice(-21);
             const bookingsData = recentDays.map(date => filteredData.dailyTotals[date].bookings);
             
-            // Calculate simple linear trend
-            const n = bookingsData.length;
+            // Calculate moving average and trend
+            const movingAvg = [];
+            const windowSize = 7;
+            for (let i = windowSize - 1; i < bookingsData.length; i++) {
+                const avg = bookingsData.slice(i - windowSize + 1, i + 1).reduce((a, b) => a + b, 0) / windowSize;
+                movingAvg.push(avg);
+            }
+            
+            // Calculate trend from moving average
+            const n = movingAvg.length;
             const x = Array.from({length: n}, (_, i) => i);
             const sumX = x.reduce((a, b) => a + b, 0);
-            const sumY = bookingsData.reduce((a, b) => a + b, 0);
-            const sumXY = x.map((xi, i) => xi * bookingsData[i]).reduce((a, b) => a + b, 0);
+            const sumY = movingAvg.reduce((a, b) => a + b, 0);
+            const sumXY = x.map((xi, i) => xi * movingAvg[i]).reduce((a, b) => a + b, 0);
             const sumXX = x.map(xi => xi * xi).reduce((a, b) => a + b, 0);
             
             const slope = (n * sumXY - sumX * sumY) / (n * sumXX - sumX * sumX);
             const intercept = (sumY - slope * sumX) / n;
 
-            // Generate future dates and predictions
+            // Add day-of-week seasonality
+            const dayOfWeekAvg = new Array(7).fill(0);
+            const dayOfWeekCount = new Array(7).fill(0);
+            
+            recentDays.forEach((date, index) => {
+                const dayOfWeek = new Date(date).getDay();
+                dayOfWeekAvg[dayOfWeek] += bookingsData[index];
+                dayOfWeekCount[dayOfWeek]++;
+            });
+            
+            for (let i = 0; i < 7; i++) {
+                if (dayOfWeekCount[i] > 0) {
+                    dayOfWeekAvg[i] /= dayOfWeekCount[i];
+                }
+            }
+            
+            const overallAvg = bookingsData.reduce((a, b) => a + b, 0) / bookingsData.length;
+            const seasonalMultipliers = dayOfWeekAvg.map(avg => avg > 0 ? avg / overallAvg : 1);
+
+            // Generate predictions with seasonality
             const futureLabels = [];
             const predictions = [];
-            const today = new Date();
+            const today = new Date(Math.max(...filteredData.dates.map(d => new Date(d))));
             
             for (let i = 1; i <= 7; i++) {
                 const futureDate = new Date(today);
                 futureDate.setDate(today.getDate() + i);
                 futureLabels.push(futureDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
-                predictions.push(Math.max(0, Math.round(intercept + slope * (n + i))));
+                
+                const basePrediction = intercept + slope * (n + i);
+                const dayOfWeek = futureDate.getDay();
+                const seasonalPrediction = basePrediction * seasonalMultipliers[dayOfWeek];
+                predictions.push(Math.max(0, Math.round(seasonalPrediction)));
             }
 
             const historicalLabels = recentDays.map(date => {
@@ -1424,11 +1520,19 @@
                             fill: false
                         },
                         {
-                            label: 'AI Prediction',
-                            data: [...Array(n).fill(null), ...predictions],
+                            label: '7-Day Moving Average',
+                            data: [...Array(windowSize - 1).fill(null), ...movingAvg, ...Array(7).fill(null)],
+                            borderColor: '#10b981',
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            borderWidth: 2,
+                            fill: false
+                        },
+                        {
+                            label: 'AI Prediction (with Seasonality)',
+                            data: [...Array(recentDays.length).fill(null), ...predictions],
                             borderColor: '#ef4444',
                             backgroundColor: 'rgba(239, 68, 68, 0.1)',
-                            borderWidth: 2,
+                            borderWidth: 3,
                             borderDash: [5, 5],
                             fill: false
                         }
@@ -1438,8 +1542,10 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: {
-                            display: true
+                        legend: { display: true },
+                        title: {
+                            display: true,
+                            text: 'Next 7 Days Prediction with Day-of-Week Seasonality'
                         }
                     },
                     scales: {
@@ -1447,13 +1553,171 @@
                             beginAtZero: true,
                             grid: { color: '#f1f5f9' }
                         },
-                        x: {
-                            grid: { color: '#f1f5f9' }
-                        }
+                        x: { grid: { color: '#f1f5f9' } }
                     }
                 }
             });
         }
+
+        function createGrowthTrendsAnalysis(ctx) {
+            // Analyze growth trends for top suppliers
+            const suppliers = Object.entries(filteredData.supplierTotals)
+                .filter(([name]) => filteredData.suppliers.includes(name))
+                .sort((a, b) => b[1].bookings - a[1].bookings)
+                .slice(0, 8);
+
+            const datasets = suppliers.map((supplier, index) => {
+                const name = supplier[0];
+                const data = filteredData.dates.map(date => filteredData.supplierData[name][date]?.bookings || 0);
+                
+                // Calculate growth rate using 7-day moving average
+                const movingAvg = [];
+                const windowSize = 7;
+                for (let i = windowSize - 1; i < data.length; i++) {
+                    const avg = data.slice(i - windowSize + 1, i + 1).reduce((a, b) => a + b, 0) / windowSize;
+                    movingAvg.push(avg);
+                }
+                
+                // Calculate growth percentage
+                const growthData = [];
+                for (let i = 1; i < movingAvg.length; i++) {
+                    if (movingAvg[i - 1] > 0) {
+                        const growth = ((movingAvg[i] - movingAvg[i - 1]) / movingAvg[i - 1]) * 100;
+                        growthData.push(Math.max(-50, Math.min(50, growth))); // Cap at ±50%
+                    } else {
+                        growthData.push(0);
+                    }
+                }
+
+                const colors = ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899', '#06b6d4', '#84cc16'];
+                
+                return {
+                    label: name,
+                    data: [...Array(windowSize).fill(null), ...growthData],
+                    borderColor: colors[index],
+                    backgroundColor: colors[index] + '20',
+                    borderWidth: 2,
+                    fill: false,
+                    tension: 0.1
+                };
+            });
+
+            charts.predictions = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: filteredData.dates.map(date => {
+                        const d = new Date(date);
+                        return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                    }),
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: true },
+                        title: {
+                            display: true,
+                            text: 'Supplier Growth Trends (7-day Moving Average Growth %)'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            grid: { color: '#f1f5f9' },
+                            title: { display: true, text: 'Growth Rate (%)' }
+                        },
+                        x: { grid: { color: '#f1f5f9' } }
+                    }
+                }
+            });
+        }
+
+        function createSeasonalAnalysis(ctx) {
+            // Analyze day-of-week and monthly patterns
+            const dayOfWeekData = new Array(7).fill(0);
+            const dayOfWeekCount = new Array(7).fill(0);
+            const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+            
+            filteredData.dates.forEach(date => {
+                const dayOfWeek = new Date(date).getDay();
+                const bookings = filteredData.dailyTotals[date].bookings;
+                dayOfWeekData[dayOfWeek] += bookings;
+                dayOfWeekCount[dayOfWeek]++;
+            });
+            
+            // Calculate averages
+            for (let i = 0; i < 7; i++) {
+                if (dayOfWeekCount[i] > 0) {
+                    dayOfWeekData[i] /= dayOfWeekCount[i];
+                }
+            }
+
+            // Monthly analysis
+            const monthlyData = {};
+            const monthlyCount = {};
+            
+            filteredData.dates.forEach(date => {
+                const dateObj = new Date(date);
+                const monthKey = dateObj.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
+                const bookings = filteredData.dailyTotals[date].bookings;
+                
+                if (!monthlyData[monthKey]) {
+                    monthlyData[monthKey] = 0;
+                    monthlyCount[monthKey] = 0;
+                }
+                monthlyData[monthKey] += bookings;
+                monthlyCount[monthKey]++;
+            });
+            
+            const monthlyAvg = Object.keys(monthlyData).map(month => ({
+                month,
+                avg: monthlyData[month] / monthlyCount[month]
+            })).sort((a, b) => new Date(a.month) - new Date(b.month));
+
+            charts.predictions = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: [...dayNames, '---', ...monthlyAvg.map(m => m.month)],
+                    datasets: [
+                        {
+                            label: 'Day of Week Average',
+                            data: [...dayOfWeekData, null, ...Array(monthlyAvg.length).fill(null)],
+                            backgroundColor: '#3b82f6',
+                            borderColor: '#2563eb',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Monthly Average',
+                            data: [...Array(8).fill(null), ...monthlyAvg.map(m => m.avg)],
+                            backgroundColor: '#10b981',
+                            borderColor: '#059669',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: true },
+                        title: {
+                            display: true,
+                            text: 'Seasonal Patterns: Day-of-Week vs Monthly Trends'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: '#f1f5f9' },
+                            title: { display: true, text: 'Average Daily Bookings' }
+                        },
+                        x: { grid: { color: '#f1f5f9' } }
+                    }
+                }
+            });
+        }
+
+        let currentOptimizationType = 'performance';
 
         function createOptimizationChart() {
             const ctx = document.getElementById('optimizationChart').getContext('2d');
@@ -1464,7 +1728,20 @@
 
             if (!filteredData.supplierTotals) return;
 
-            // Create scatter plot data for performance vs volume analysis
+            switch (currentOptimizationType) {
+                case 'performance':
+                    createPerformanceVsVolumeMatrix(ctx);
+                    break;
+                case 'efficiency':
+                    createEfficiencyAnalysis(ctx);
+                    break;
+                case 'potential':
+                    createGrowthPotentialMatrix(ctx);
+                    break;
+            }
+        }
+
+        function createPerformanceVsVolumeMatrix(ctx) {
             const scatterData = Object.entries(filteredData.supplierTotals)
                 .filter(([name]) => filteredData.suppliers.includes(name))
                 .map(([name, data]) => ({
@@ -1473,7 +1750,7 @@
                     supplier: name,
                     gmv: data.gmv
                 }))
-                .filter(point => point.x > 10); // Filter out very low volume
+                .filter(point => point.x > 10);
 
             charts.optimization = new Chart(ctx, {
                 type: 'scatter',
@@ -1482,29 +1759,39 @@
                         label: 'Suppliers',
                         data: scatterData,
                         backgroundColor: scatterData.map(point => {
-                            if (point.x > 500 && point.y > 15000) return '#10b981'; // High volume, high value
-                            if (point.x > 500) return '#f59e0b'; // High volume, low value
-                            if (point.y > 15000) return '#8b5cf6'; // Low volume, high value
-                            return '#ef4444'; // Low volume, low value
+                            if (point.x > 500 && point.y > 15000) return '#10b981'; // High volume, high value - Stars
+                            if (point.x > 500) return '#f59e0b'; // High volume, low value - Workhorses
+                            if (point.y > 15000) return '#8b5cf6'; // Low volume, high value - Premium
+                            return '#ef4444'; // Low volume, low value - Underperformers
                         }),
                         borderColor: '#ffffff',
                         borderWidth: 2,
-                        pointRadius: 8
+                        pointRadius: scatterData.map(point => {
+                            const radius = Math.max(6, Math.min(15, point.gmv / 500000));
+                            return radius;
+                        })
                     }]
                 },
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: {
-                            display: false
+                        legend: { display: false },
+                        title: {
+                            display: true,
+                            text: 'Supplier Performance Matrix: Volume vs Booking Value'
                         },
                         tooltip: {
                             callbacks: {
                                 label: function(context) {
                                     const point = context.raw;
+                                    let category = 'Underperformer';
+                                    if (point.x > 500 && point.y > 15000) category = '⭐ Star Performer';
+                                    else if (point.x > 500) category = '🔧 Workhorse';
+                                    else if (point.y > 15000) category = '💎 Premium Partner';
+                                    
                                     return [
-                                        `Supplier: ${point.supplier}`,
+                                        `${point.supplier} (${category})`,
                                         `Bookings: ${point.x.toLocaleString()}`,
                                         `Avg Value: ₹${Math.round(point.y/1000)}k`,
                                         `Total GMV: ₹${Math.round(point.gmv/100000)}L`
@@ -1515,22 +1802,203 @@
                     },
                     scales: {
                         x: {
-                            title: {
-                                display: true,
-                                text: 'Total Bookings'
-                            },
+                            title: { display: true, text: 'Total Bookings (Volume)' },
                             grid: { color: '#f1f5f9' }
                         },
                         y: {
-                            title: {
-                                display: true,
-                                text: 'Average Booking Value (₹)'
-                            },
+                            title: { display: true, text: 'Average Booking Value (₹)' },
                             grid: { color: '#f1f5f9' }
                         }
                     }
                 }
             });
+        }
+
+        function createEfficiencyAnalysis(ctx) {
+            const suppliers = Object.entries(filteredData.supplierTotals)
+                .filter(([name]) => filteredData.suppliers.includes(name))
+                .map(([name, data]) => {
+                    const efficiency = data.days > 0 ? data.bookings / data.days : 0; // Bookings per active day
+                    const consistency = calculateConsistency(name);
+                    return {
+                        x: efficiency,
+                        y: consistency,
+                        supplier: name,
+                        bookings: data.bookings,
+                        activeDays: data.days,
+                        gmv: data.gmv
+                    };
+                })
+                .filter(point => point.x > 1);
+
+            charts.optimization = new Chart(ctx, {
+                type: 'scatter',
+                data: {
+                    datasets: [{
+                        label: 'Suppliers',
+                        data: suppliers,
+                        backgroundColor: suppliers.map(point => {
+                            if (point.x > 30 && point.y > 0.7) return '#10b981'; // High efficiency, high consistency
+                            if (point.x > 30) return '#f59e0b'; // High efficiency, low consistency
+                            if (point.y > 0.7) return '#8b5cf6'; // Low efficiency, high consistency
+                            return '#ef4444'; // Low efficiency, low consistency
+                        }),
+                        borderColor: '#ffffff',
+                        borderWidth: 2,
+                        pointRadius: suppliers.map(point => Math.max(6, Math.min(15, point.bookings / 200)))
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        title: {
+                            display: true,
+                            text: 'Supplier Efficiency Analysis: Daily Performance vs Consistency'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const point = context.raw;
+                                    let category = 'Needs Improvement';
+                                    if (point.x > 30 && point.y > 0.7) category = '🚀 Highly Efficient';
+                                    else if (point.x > 30) category = '⚡ High Output';
+                                    else if (point.y > 0.7) category = '🎯 Reliable';
+                                    
+                                    return [
+                                        `${point.supplier} (${category})`,
+                                        `Daily Avg: ${point.x.toFixed(1)} bookings`,
+                                        `Consistency: ${(point.y * 100).toFixed(1)}%`,
+                                        `Active Days: ${point.activeDays}`,
+                                        `Total Bookings: ${point.bookings.toLocaleString()}`
+                                    ];
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: { display: true, text: 'Daily Efficiency (Bookings per Active Day)' },
+                            grid: { color: '#f1f5f9' }
+                        },
+                        y: {
+                            title: { display: true, text: 'Consistency Score (0-1)' },
+                            grid: { color: '#f1f5f9' },
+                            min: 0,
+                            max: 1
+                        }
+                    }
+                }
+            });
+        }
+
+        function createGrowthPotentialMatrix(ctx) {
+            const suppliers = Object.entries(filteredData.supplierTotals)
+                .filter(([name]) => filteredData.suppliers.includes(name))
+                .map(([name, data]) => {
+                    const growthRate = calculateGrowthRate(name);
+                    const marketPotential = data.bookings > 0 ? (data.gmv / data.bookings) / 1000 : 0; // Normalized potential
+                    return {
+                        x: growthRate,
+                        y: marketPotential,
+                        supplier: name,
+                        bookings: data.bookings,
+                        gmv: data.gmv
+                    };
+                })
+                .filter(point => point.supplier);
+
+            charts.optimization = new Chart(ctx, {
+                type: 'scatter',
+                data: {
+                    datasets: [{
+                        label: 'Suppliers',
+                        data: suppliers,
+                        backgroundColor: suppliers.map(point => {
+                            if (point.x > 0.05 && point.y > 20) return '#10b981'; // High growth, high potential
+                            if (point.x > 0.05) return '#f59e0b'; // High growth, low potential
+                            if (point.y > 20) return '#8b5cf6'; // Low growth, high potential
+                            return '#ef4444'; // Low growth, low potential
+                        }),
+                        borderColor: '#ffffff',
+                        borderWidth: 2,
+                        pointRadius: suppliers.map(point => Math.max(6, Math.min(15, Math.sqrt(point.bookings) / 5)))
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        title: {
+                            display: true,
+                            text: 'Growth Potential Matrix: Recent Growth vs Market Value'
+                        },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    const point = context.raw;
+                                    let category = 'Monitor';
+                                    if (point.x > 0.05 && point.y > 20) category = '🌟 Rising Star';
+                                    else if (point.x > 0.05) category = '📈 Fast Grower';
+                                    else if (point.y > 20) category = '💰 High Value';
+                                    
+                                    return [
+                                        `${point.supplier} (${category})`,
+                                        `Growth Rate: ${(point.x * 100).toFixed(1)}%`,
+                                        `Value Potential: ${point.y.toFixed(1)}k`,
+                                        `Total Bookings: ${point.bookings.toLocaleString()}`,
+                                        `GMV: ₹${Math.round(point.gmv/100000)}L`
+                                    ];
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        x: {
+                            title: { display: true, text: 'Recent Growth Rate (Weekly %)' },
+                            grid: { color: '#f1f5f9' }
+                        },
+                        y: {
+                            title: { display: true, text: 'Market Value Potential (₹k)' },
+                            grid: { color: '#f1f5f9' }
+                        }
+                    }
+                }
+            });
+        }
+
+        function calculateConsistency(supplierName) {
+            const supplierDailyData = filteredData.dates.map(date => 
+                filteredData.supplierData[supplierName][date]?.bookings || 0
+            ).filter(bookings => bookings > 0); // Only count active days
+            
+            if (supplierDailyData.length < 5) return 0;
+            
+            const mean = supplierDailyData.reduce((a, b) => a + b, 0) / supplierDailyData.length;
+            const variance = supplierDailyData.reduce((sum, val) => sum + Math.pow(val - mean, 2), 0) / supplierDailyData.length;
+            const stdDev = Math.sqrt(variance);
+            
+            // Coefficient of variation (lower is more consistent)
+            const cv = mean > 0 ? stdDev / mean : 1;
+            // Convert to consistency score (0-1, where 1 is most consistent)
+            return Math.max(0, Math.min(1, 1 - (cv / 2)));
+        }
+
+        function calculateGrowthRate(supplierName) {
+            const data = filteredData.dates.map(date => 
+                filteredData.supplierData[supplierName][date]?.bookings || 0
+            );
+            
+            if (data.length < 14) return 0;
+            
+            // Compare last week vs previous week
+            const lastWeek = data.slice(-7).reduce((a, b) => a + b, 0);
+            const prevWeek = data.slice(-14, -7).reduce((a, b) => a + b, 0);
+            
+            if (prevWeek === 0) return lastWeek > 0 ? 0.5 : 0;
+            return (lastWeek - prevWeek) / prevWeek;
         }
 
         // Enhanced interaction functions
@@ -1570,12 +2038,26 @@
         }
 
         function showPrediction(type) {
-            // Different prediction types could be implemented here
+            currentPredictionType = type;
+            
+            // Update button states
+            document.querySelectorAll('#predictions .chart-controls .chart-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
             createPredictionsChart();
         }
 
         function showOptimization(type) {
-            // Different optimization views could be implemented here
+            currentOptimizationType = type;
+            
+            // Update button states  
+            document.querySelectorAll('#optimization .chart-controls .chart-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
             createOptimizationChart();
         }
 
