@@ -243,37 +243,165 @@
         }
 
         .nav-tabs {
-            background: white;
-            border-radius: 0.75rem;
-            padding: 0.5rem;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            border-radius: 1rem;
+            padding: 0.75rem;
             margin-bottom: 2rem;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            box-shadow: 0 8px 32px rgba(0,0,0,0.15);
             display: flex;
-            gap: 0.5rem;
+            gap: 0.75rem;
             overflow-x: auto;
+            position: relative;
+            animation: slideIn 0.6s ease-out;
+            border: 2px solid rgba(255,255,255,0.2);
+        }
+
+        .nav-tabs::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #ffeaa7);
+            border-radius: 1rem;
+            z-index: -1;
+            animation: rainbow 3s ease-in-out infinite;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .nav-tabs:hover::before {
+            opacity: 1;
+        }
+
+        @keyframes rainbow {
+            0%, 100% { background: linear-gradient(45deg, #ff6b6b, #4ecdc4, #45b7d1, #96ceb4, #ffeaa7); }
+            25% { background: linear-gradient(45deg, #4ecdc4, #45b7d1, #96ceb4, #ffeaa7, #ff6b6b); }
+            50% { background: linear-gradient(45deg, #45b7d1, #96ceb4, #ffeaa7, #ff6b6b, #4ecdc4); }
+            75% { background: linear-gradient(45deg, #96ceb4, #ffeaa7, #ff6b6b, #4ecdc4, #45b7d1); }
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
         }
 
         .nav-tab {
-            padding: 0.75rem 1.5rem;
+            padding: 1rem 1.75rem;
             border: none;
-            background: transparent;
-            color: #64748b;
-            font-weight: 500;
-            border-radius: 0.5rem;
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            font-weight: 600;
+            font-size: 0.95rem;
+            border-radius: 0.75rem;
             cursor: pointer;
-            transition: all 0.2s;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             white-space: nowrap;
+            position: relative;
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            text-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .nav-tab::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, rgba(255,255,255,0.2), rgba(255,255,255,0.05));
+            border-radius: 0.75rem;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .nav-tab:hover::before {
+            opacity: 1;
         }
 
         .nav-tab.active {
-            background: #3b82f6;
-            color: white;
-            box-shadow: 0 2px 4px rgba(59, 130, 246, 0.3);
+            background: linear-gradient(135deg, #fff, #f8fafc);
+            color: #1e293b;
+            box-shadow: 
+                0 8px 32px rgba(255,255,255,0.3),
+                0 2px 8px rgba(0,0,0,0.1),
+                inset 0 1px 0 rgba(255,255,255,0.5);
+            transform: translateY(-2px);
+            text-shadow: none;
+            animation: activeTab 0.3s ease-out;
+        }
+
+        .nav-tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -8px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-top: 8px solid white;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+        }
+
+        @keyframes activeTab {
+            0% {
+                transform: translateY(0) scale(1);
+            }
+            50% {
+                transform: translateY(-4px) scale(1.05);
+            }
+            100% {
+                transform: translateY(-2px) scale(1);
+            }
         }
 
         .nav-tab:hover:not(.active) {
-            background: #f1f5f9;
-            color: #334155;
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 16px rgba(255,255,255,0.2);
+        }
+
+        .nav-tab:active {
+            transform: translateY(0) scale(0.98);
+        }
+
+        /* Add icons to tabs */
+        .nav-tab[data-tab="overview"]::before {
+            content: '📊';
+            margin-right: 0.5rem;
+        }
+
+        .nav-tab[data-tab="suppliers"]::before {
+            content: '🎯';
+            margin-right: 0.5rem;
+        }
+
+        .nav-tab[data-tab="trends"]::before {
+            content: '📈';
+            margin-right: 0.5rem;
+        }
+
+        .nav-tab[data-tab="predictions"]::before {
+            content: '🔮';
+            margin-right: 0.5rem;
+        }
+
+        .nav-tab[data-tab="optimization"]::before {
+            content: '⚡';
+            margin-right: 0.5rem;
         }
 
         .tab-content {
@@ -642,11 +770,11 @@
             </div>
 
             <nav class="nav-tabs">
-                <button class="nav-tab active" onclick="switchTab('overview')">Business Overview</button>
-                <button class="nav-tab" onclick="switchTab('suppliers')">Smart Supplier Analysis</button>
-                <button class="nav-tab" onclick="switchTab('trends')">Trend Intelligence</button>
-                <button class="nav-tab" onclick="switchTab('predictions')">AI Predictions</button>
-                <button class="nav-tab" onclick="switchTab('optimization')">Optimization Hub</button>
+                <button class="nav-tab active" data-tab="overview" onclick="switchTab('overview')">Business Overview</button>
+                <button class="nav-tab" data-tab="suppliers" onclick="switchTab('suppliers')">Smart Supplier Analysis</button>
+                <button class="nav-tab" data-tab="trends" onclick="switchTab('trends')">Trend Intelligence</button>
+                <button class="nav-tab" data-tab="predictions" onclick="switchTab('predictions')">AI Predictions</button>
+                <button class="nav-tab" data-tab="optimization" onclick="switchTab('optimization')">Optimization Hub</button>
             </nav>
 
             <!-- Business Overview Tab -->
@@ -2001,17 +2129,187 @@
             return (lastWeek - prevWeek) / prevWeek;
         }
 
-        // Enhanced interaction functions
+        // Add welcome animation for new users
+        function showWelcomeAnimation() {
+            const welcomeOverlay = document.createElement('div');
+            welcomeOverlay.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.8);
+                z-index: 10000;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                opacity: 0;
+                transition: opacity 0.5s;
+            `;
+            
+            welcomeOverlay.innerHTML = `
+                <div style="
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    padding: 3rem;
+                    border-radius: 2rem;
+                    text-align: center;
+                    color: white;
+                    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+                    max-width: 500px;
+                    margin: 2rem;
+                    animation: welcomePopIn 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+                ">
+                    <h2 style="font-size: 2rem; margin-bottom: 1rem; animation: welcomeGlow 2s ease-in-out infinite alternate;">
+                        🎉 Welcome to Your AI Dashboard! 🎉
+                    </h2>
+                    <p style="font-size: 1.1rem; margin-bottom: 2rem; opacity: 0.9;">
+                        Navigate through these magical tabs to discover powerful insights about your hotel booking business!
+                    </p>
+                    <div style="display: flex; gap: 1rem; justify-content: center; margin: 2rem 0; flex-wrap: wrap;">
+                        <div style="background: rgba(255,255,255,0.1); padding: 0.5rem 1rem; border-radius: 1rem; backdrop-filter: blur(10px);">📊 Overview</div>
+                        <div style="background: rgba(255,255,255,0.1); padding: 0.5rem 1rem; border-radius: 1rem; backdrop-filter: blur(10px);">🎯 Suppliers</div>
+                        <div style="background: rgba(255,255,255,0.1); padding: 0.5rem 1rem; border-radius: 1rem; backdrop-filter: blur(10px);">📈 Trends</div>
+                        <div style="background: rgba(255,255,255,0.1); padding: 0.5rem 1rem; border-radius: 1rem; backdrop-filter: blur(10px);">🔮 Predictions</div>
+                        <div style="background: rgba(255,255,255,0.1); padding: 0.5rem 1rem; border-radius: 1rem; backdrop-filter: blur(10px);">⚡ Optimization</div>
+                    </div>
+                    <button onclick="this.parentElement.parentElement.style.display='none'" style="
+                        background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+                        color: white;
+                        border: none;
+                        padding: 1rem 2rem;
+                        border-radius: 2rem;
+                        font-weight: 600;
+                        cursor: pointer;
+                        transition: all 0.3s;
+                        box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+                    " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                        🚀 Let's Explore!
+                    </button>
+                </div>
+            `;
+            
+            document.body.appendChild(welcomeOverlay);
+            setTimeout(() => welcomeOverlay.style.opacity = '1', 100);
+            
+            // Auto-remove after 10 seconds
+            setTimeout(() => {
+                if (welcomeOverlay.parentElement) {
+                    welcomeOverlay.style.opacity = '0';
+                    setTimeout(() => welcomeOverlay.remove(), 500);
+                }
+            }, 10000);
+        }
+
+        // Add CSS animations
+        const styleSheet = document.createElement('style');
+        styleSheet.textContent = `
+            @keyframes welcomePopIn {
+                0% {
+                    transform: scale(0.5) rotate(-10deg);
+                    opacity: 0;
+                }
+                100% {
+                    transform: scale(1) rotate(0deg);
+                    opacity: 1;
+                }
+            }
+            
+            @keyframes welcomeGlow {
+                from { text-shadow: 0 0 10px rgba(255,255,255,0.5); }
+                to { text-shadow: 0 0 20px rgba(255,255,255,0.8), 0 0 30px rgba(255,255,255,0.6); }
+            }
+            
+            .tab-indicator {
+                position: absolute;
+                top: -10px;
+                right: -5px;
+                background: linear-gradient(135deg, #ff6b6b, #ee5a24);
+                color: white;
+                font-size: 0.7rem;
+                padding: 0.2rem 0.5rem;
+                border-radius: 1rem;
+                animation: pulse 2s infinite;
+                font-weight: 600;
+                box-shadow: 0 2px 8px rgba(255,107,107,0.4);
+            }
+            
+            .nav-tab:hover .tab-indicator {
+                animation: bounce 0.6s;
+            }
+            
+            @keyframes bounce {
+                0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+                40% { transform: translateY(-8px); }
+                60% { transform: translateY(-4px); }
+            }
+        `;
+        document.head.appendChild(styleSheet);
+
+        // Enhanced tab switching with animations
         function switchTab(tabName) {
+            // Remove all active classes
             document.querySelectorAll('.tab-content').forEach(tab => {
                 tab.classList.remove('active');
+                tab.style.opacity = '0';
+                tab.style.transform = 'translateY(20px)';
             });
+            
             document.querySelectorAll('.nav-tab').forEach(tab => {
                 tab.classList.remove('active');
             });
             
-            document.getElementById(tabName).classList.add('active');
-            event.target.classList.add('active');
+            // Add active class to selected elements
+            const selectedTab = document.getElementById(tabName);
+            const selectedNavTab = event.target;
+            
+            selectedNavTab.classList.add('active');
+            
+            // Animate tab content appearance
+            setTimeout(() => {
+                selectedTab.classList.add('active');
+                selectedTab.style.transition = 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
+                selectedTab.style.opacity = '1';
+                selectedTab.style.transform = 'translateY(0)';
+            }, 100);
+
+            // Add celebration effect for first-time users
+            if (Math.random() < 0.3) { // 30% chance for fun
+                createConfetti(selectedNavTab);
+            }
+        }
+
+        function createConfetti(element) {
+            for (let i = 0; i < 15; i++) {
+                const confetti = document.createElement('div');
+                confetti.style.cssText = `
+                    position: absolute;
+                    width: 6px;
+                    height: 6px;
+                    background: ${['#ff6b6b', '#4ecdc4', '#45b7d1', '#96ceb4', '#ffeaa7'][Math.floor(Math.random() * 5)]};
+                    border-radius: 50%;
+                    pointer-events: none;
+                    z-index: 1000;
+                `;
+                
+                const rect = element.getBoundingClientRect();
+                confetti.style.left = (rect.left + rect.width/2) + 'px';
+                confetti.style.top = (rect.top + rect.height/2) + 'px';
+                
+                document.body.appendChild(confetti);
+                
+                // Animate confetti
+                const angle = (Math.PI * 2 * i) / 15;
+                const velocity = 100 + Math.random() * 100;
+                const lifetime = 1000 + Math.random() * 1000;
+                
+                confetti.animate([
+                    { transform: 'translate(0, 0) scale(0)', opacity: 1 },
+                    { transform: `translate(${Math.cos(angle) * velocity}px, ${Math.sin(angle) * velocity - 200}px) scale(1)`, opacity: 0 }
+                ], {
+                    duration: lifetime,
+                    easing: 'cubic-bezier(0.25, 0.46, 0.45, 0.94)'
+                }).onfinish = () => confetti.remove();
+            }
         }
 
         function toggleChartType(type) {
@@ -2092,9 +2390,43 @@
             }, 3000);
         }
 
-        // Initialize dashboard
+        // Initialize dashboard with welcome animation
         document.addEventListener('DOMContentLoaded', function() {
             console.log('AI-Enhanced Dashboard initializing...');
+            
+            // Show welcome animation for new users (or randomly for fun)
+            const isFirstTime = !localStorage.getItem('dashboardVisited');
+            if (isFirstTime || Math.random() < 0.1) { // First time or 10% chance
+                setTimeout(showWelcomeAnimation, 1500);
+                localStorage.setItem('dashboardVisited', 'true');
+            }
+            
+            // Add notification badges to tabs for new users
+            if (isFirstTime) {
+                setTimeout(() => {
+                    const tabs = ['suppliers', 'trends', 'predictions', 'optimization'];
+                    tabs.forEach((tab, index) => {
+                        setTimeout(() => {
+                            const tabElement = document.querySelector(`[data-tab="${tab}"]`);
+                            if (tabElement && !tabElement.querySelector('.tab-indicator')) {
+                                const indicator = document.createElement('span');
+                                indicator.className = 'tab-indicator';
+                                indicator.textContent = 'NEW';
+                                indicator.style.position = 'absolute';
+                                tabElement.style.position = 'relative';
+                                tabElement.appendChild(indicator);
+                                
+                                // Remove indicator after 30 seconds
+                                setTimeout(() => {
+                                    indicator.style.opacity = '0';
+                                    setTimeout(() => indicator.remove(), 300);
+                                }, 30000);
+                            }
+                        }, index * 1000);
+                    });
+                }, 3000);
+            }
+            
             loadBookingData();
         });
     </script>
