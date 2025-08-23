@@ -401,17 +401,18 @@
     </div>
 
     <script>
-        let bookingData = [];
+        let rawBookingData = [];
+        let processedData = {};
         let charts = {};
         let currentChartType = 'line';
         let currentFilter = 'all';
 
-        // Load CSV data
+        // Load CSV data (works with your specific format)
         async function loadBookingData() {
             try {
                 showLoading();
                 
-                const response = await fetch('booking-data.csv');
+                const response = await fetch('Hotel API v2_Supplier Level_Pivot table 2.csv');
                 if (!response.ok) {
                     throw new Error(`Failed to load data: ${response.statusText}`);
                 }
@@ -426,8 +427,8 @@
                             console.warn('CSV parsing warnings:', results.errors);
                         }
                         
-                        bookingData = results.data;
-                        console.log('Loaded booking data:', bookingData);
+                        rawBookingData = results.data;
+                        console.log('Loaded booking data:', rawBookingData.length, 'rows');
                         
                         processData();
                         updateMetrics();
@@ -443,71 +444,112 @@
                 
             } catch (error) {
                 console.error('Error loading data:', error);
-                showError('Failed to load booking data. Please check that booking-data.csv exists in your repository.');
+                showError('Failed to load booking data. Please check that Hotel API v2_Supplier Level_Pivot table 2.csv exists in your repository.');
                 hideLoading();
             }
         }
 
-        // Process and transform data
+        // Process data from your CSV format
         function processData() {
-            if (bookingData.length === 0) return;
+            if (rawBookingData.length === 0) return;
 
-            // Get date columns (exclude supplier name column)
-            const dateColumns = Object.keys(bookingData[0]).filter(key => 
-                key.toLowerCase() !== 'supplier' && 
-                key.toLowerCase() !== 'supplier name' && 
-                key.toLowerCase() !== 'grand total' &&
-                key.trim() !== ''
-            );
+            console.log('Processing data...');
 
-            console.log('Date columns found:', dateColumns);
+            // Get unique suppliers and dates
+            const uniqueSuppliers = [...new Set(rawBookingData.map(row => row.name))].filter(Boolean);
+            const uniqueDates = [...new Set(rawBookingData.map(row => row['booking_date (Date)']))].filter(Boolean);
+            
+            // Sort dates chronologically
+            uniqueDates.sort((a, b) => new Date(a) - new Date(b));
 
-            // Transform data for charts
-            window.chartData = {
-                dates: dateColumns,
-                suppliers: bookingData.map(row => row[Object.keys(row)[0]] || row.Supplier || row['Supplier Name'] || 'Unknown'),
-                dailyData: {}
-            };
+            console.log('Found suppliers:', uniqueSuppliers.length);
+            console.log('Found dates:', uniqueDates.length);
 
-            // Process daily booking data
-            dateColumns.forEach(date => {
-                window.chartData.dailyData[date] = bookingData.map(row => {
-                    const value = parseInt(row[date]) || 0;
-                    return value;
+            // Process data into daily aggregates
+            const dailyTotals = {};
+            const supplierData = {};
+
+            // Initialize supplier data
+            uniqueSuppliers.forEach(supplier => {
+                supplierData[supplier] = {};
+                uniqueDates.forEach(date => {
+                    supplierData[supplier][date] = { bookings: 0, gmv: 0 };
                 });
             });
+
+            // Initialize daily totals
+            uniqueDates.forEach(date => {
+                dailyTotals[date] = { bookings: 0, gmv: 0 };
+            });
+
+            // Aggregate data
+            rawBookingData.forEach(row => {
+                if (row.name && row['booking_date (Date)']) {
+                    const supplier = row.name;
+                    const date = row['booking_date (Date)'];
+                    const bookings = parseInt(row.id) || 0;
+                    const gmv = parseInt(row.amount_in_inr) || 0;
+
+                    // Add to supplier data
+                    if (supplierData[supplier] && supplierData[supplier][date]) {
+                        supplierData[supplier][date].bookings += bookings;
+                        supplierData[supplier][date].gmv += gmv;
+                    }
+
+                    // Add to daily totals
+                    if (dailyTotals[date]) {
+                        dailyTotals[date].bookings += bookings;
+                        dailyTotals[date].gmv += gmv;
+                    }
+                }
+            });
+
+            // Store processed data globally
+            window.processedBookingData = {
+                suppliers: uniqueSuppliers,
+                dates: uniqueDates,
+                dailyTotals: dailyTotals,
+                supplierData: supplierData
+            };
+
+            console.log('Data processing complete:', window.processedBookingData);
         }
 
-        // Update metrics
+        // Update metrics with real data
         function updateMetrics() {
-            if (!window.chartData || Object.keys(window.chartData.dailyData).length === 0) {
+            if (!window.processedBookingData) {
                 return;
             }
 
-            // Calculate total bookings
+            const data = window.processedBookingData;
+
+            // Calculate totals
             let totalBookings = 0;
-            Object.values(window.chartData.dailyData).forEach(dayData => {
-                totalBookings += dayData.reduce((sum, bookings) => sum + bookings, 0);
+            let totalGMV = 0;
+
+            Object.values(data.dailyTotals).forEach(day => {
+                totalBookings += day.bookings;
+                totalGMV += day.gmv;
             });
 
-            // Calculate active suppliers
-            const activeSuppliers = window.chartData.suppliers.length;
+            const activeSuppliers = data.suppliers.length;
+            const avgBookingValue = totalBookings > 0 ? Math.round(totalGMV / totalBookings) : 0;
 
             // Update DOM elements
             document.getElementById('total-bookings').textContent = totalBookings.toLocaleString();
-            document.getElementById('total-gmv').textContent = '₹' + (totalBookings * 2500).toLocaleString() + 'Cr';
-            document.getElementById('avg-booking-value').textContent = '₹' + (2500).toLocaleString();
+            document.getElementById('total-gmv').textContent = '₹' + (totalGMV / 10000000).toFixed(2) + 'Cr';
+            document.getElementById('avg-booking-value').textContent = '₹' + avgBookingValue.toLocaleString();
             document.getElementById('active-suppliers').textContent = activeSuppliers;
 
             // Update summary stats
             document.getElementById('summary-stats').textContent = 
-                `${totalBookings.toLocaleString()} bookings • ₹${(totalBookings * 2500).toLocaleString()}Cr GMV • ${activeSuppliers} suppliers`;
+                `${totalBookings.toLocaleString()} bookings • ₹${(totalGMV / 10000000).toFixed(2)}Cr GMV • ${activeSuppliers} suppliers`;
 
             // Update last updated timestamp
             document.getElementById('last-updated').textContent = 'Updated ' + new Date().toLocaleString();
         }
 
-        // Create charts
+        // Create charts with processed data
         function createCharts() {
             createOverviewChart();
             createTrendsChart();
@@ -523,21 +565,23 @@
                 charts.overview.destroy();
             }
 
-            if (!window.chartData || Object.keys(window.chartData.dailyData).length === 0) {
+            if (!window.processedBookingData) {
                 return;
             }
 
-            const dailyTotals = window.chartData.dates.map(date => 
-                window.chartData.dailyData[date].reduce((sum, bookings) => sum + bookings, 0)
-            );
+            const data = window.processedBookingData;
+            const dailyBookings = data.dates.map(date => data.dailyTotals[date].bookings);
 
             charts.overview = new Chart(ctx, {
                 type: currentChartType,
                 data: {
-                    labels: window.chartData.dates,
+                    labels: data.dates.map(date => {
+                        const d = new Date(date);
+                        return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                    }),
                     datasets: [{
                         label: 'Total Bookings',
-                        data: dailyTotals,
+                        data: dailyBookings,
                         borderColor: '#3b82f6',
                         backgroundColor: currentChartType === 'bar' ? '#3b82f6' : 'rgba(59, 130, 246, 0.1)',
                         borderWidth: 2,
@@ -577,16 +621,18 @@
                 charts.trends.destroy();
             }
 
-            if (!window.chartData || Object.keys(window.chartData.dailyData).length === 0) {
+            if (!window.processedBookingData) {
                 return;
             }
 
+            const data = window.processedBookingData;
+
             // Calculate total bookings per supplier
-            const supplierTotals = window.chartData.suppliers.map((supplier, index) => {
-                const total = window.chartData.dates.reduce((sum, date) => {
-                    return sum + (window.chartData.dailyData[date][index] || 0);
+            const supplierTotals = data.suppliers.map(supplier => {
+                const total = data.dates.reduce((sum, date) => {
+                    return sum + data.supplierData[supplier][date].bookings;
                 }, 0);
-                return { supplier, total, index };
+                return { supplier, total };
             });
 
             // Sort and filter suppliers
@@ -606,7 +652,7 @@
 
             const datasets = suppliersToShow.map((item, colorIndex) => ({
                 label: item.supplier,
-                data: window.chartData.dates.map(date => window.chartData.dailyData[date][item.index] || 0),
+                data: data.dates.map(date => data.supplierData[item.supplier][date].bookings),
                 borderColor: colors[colorIndex % colors.length],
                 backgroundColor: colors[colorIndex % colors.length] + '20',
                 borderWidth: 2,
@@ -616,7 +662,10 @@
             charts.trends = new Chart(ctx, {
                 type: 'line',
                 data: {
-                    labels: window.chartData.dates,
+                    labels: data.dates.map(date => {
+                        const d = new Date(date);
+                        return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                    }),
                     datasets: datasets
                 },
                 options: {
@@ -652,14 +701,16 @@
                 charts.analysis.destroy();
             }
 
-            if (!window.chartData || Object.keys(window.chartData.dailyData).length === 0) {
+            if (!window.processedBookingData) {
                 return;
             }
 
+            const data = window.processedBookingData;
+
             // Calculate total bookings per supplier
-            const supplierTotals = window.chartData.suppliers.map((supplier, index) => {
-                const total = window.chartData.dates.reduce((sum, date) => {
-                    return sum + (window.chartData.dailyData[date][index] || 0);
+            const supplierTotals = data.suppliers.map(supplier => {
+                const total = data.dates.reduce((sum, date) => {
+                    return sum + data.supplierData[supplier][date].bookings;
                 }, 0);
                 return { supplier, total };
             });
@@ -708,14 +759,16 @@
                 charts.intelligence.destroy();
             }
 
-            if (!window.chartData || Object.keys(window.chartData.dailyData).length === 0) {
+            if (!window.processedBookingData) {
                 return;
             }
 
+            const data = window.processedBookingData;
+
             // Calculate total bookings per supplier
-            const supplierTotals = window.chartData.suppliers.map((supplier, index) => {
-                const total = window.chartData.dates.reduce((sum, date) => {
-                    return sum + (window.chartData.dailyData[date][index] || 0);
+            const supplierTotals = data.suppliers.map(supplier => {
+                const total = data.dates.reduce((sum, date) => {
+                    return sum + data.supplierData[supplier][date].bookings;
                 }, 0);
                 return { supplier, total };
             });
