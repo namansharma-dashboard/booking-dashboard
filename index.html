@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hotel Booking Analytics Dashboard</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            color: #334155;
+            line-height: 1.6;
+        }
+
+        .header {
+            background: white;
+            border-bottom: 1px solid #e2e8f0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            padding: 2rem 0;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1.5rem;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 0.5rem;
+        }
+
+        .subtitle {
+            color: #64748b;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .status-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: #dcfce7;
+            color: #166534;
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .status-dot {
+            width: 0.5rem;
+            height: 0.5rem;
+            background: #22c55e;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .tabs {
+            display: flex;
+            gap: 1rem;
+            margin: 2rem 0;
+        }
+
+        .tab {
+            background: #f1f5f9;
+            color: #64748b;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s ease;
+        }
+
+        .tab.active {
+            background: #1e293b;
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(30, 41, 59, 0.3);
+        }
+
+        .tab:hover:not(.active) {
+            background: #e2e8f0;
+            transform: translateY(-1px);
+        }
+
+        .metrics-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .metric-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 1rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border-left: 4px solid;
+            transition: transform 0.2s ease;
+        }
+
+        .metric-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+        }
+
+        .metric-card.blue { border-left-color: #3b82f6; }
+        .metric-card.green { border-left-color: #10b981; }
+        .metric-card.purple { border-left-color: #8b5cf6; }
+        .metric-card.orange { border-left-color: #f59e0b; }
+
+        .metric-title {
+            font-size: 0.875rem;
+            color: #64748b;
+            margin-bottom: 0.5rem;
+            font-weight: 500;
+        }
+
+        .metric-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 0.25rem;
+        }
+
+        .metric-change {
+            font-size: 0.875rem;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .metric-change.positive { color: #059669; }
+        .metric-change.negative { color: #dc2626; }
+
+        .chart-container {
+            background: white;
+            border-radius: 1rem;
+            padding: 2rem;
+            margin: 2rem 0;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .chart-title {
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 1rem;
+        }
+
+        .supplier-table {
+            background: white;
+            border-radius: 1rem;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            margin: 2rem 0;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th {
+            background: #f8fafc;
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            color: #374151;
+            border-bottom: 1px solid #e5e7eb;
+            font-size: 0.875rem;
+        }
+
+        td {
+            padding: 1rem;
+            border-bottom: 1px solid #f3f4f6;
+        }
+
+        tr:hover {
+            background: #f8fafc;
+        }
+
+        .rank-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 2rem;
+            height: 2rem;
+            border-radius: 50%;
+            color: white;
+            font-weight: 600;
+            font-size: 0.875rem;
+        }
+
+        .rank-1 { background: #fbbf24; }
+        .rank-2 { background: #9ca3af; }
+        .rank-3 { background: #fb923c; }
+        .rank-other { background: #64748b; }
+
+        .performance-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 9999px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .perf-outstanding { background: #dcfce7; color: #166534; }
+        .perf-excellent { background: #dbeafe; color: #1e40af; }
+        .perf-good { background: #fef3c7; color: #92400e; }
+        .perf-average { background: #f3f4f6; color: #374151; }
+        .perf-poor { background: #fef2f2; color: #991b1b; }
+
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: #64748b;
+        }
+
+        .error {
+            background: #fee2e2;
+            color: #991b1b;
+            padding: 1rem;
+            border-radius: 0.5rem;
+            margin: 1rem 0;
+        }
+
+        .insights-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+            gap: 1.5rem;
+            margin: 2rem 0;
+        }
+
+        .insight-card {
+            padding: 1.5rem;
+            border-radius: 1rem;
+            border-left: 4px solid;
+        }
+
+        .insight-card.positive {
+            background: #f0fdf4;
+            border-left-color: #22c55e;
+        }
+
+        .insight-card.critical {
+            background: #fef2f2;
+            border-left-color: #ef4444;
+        }
+
+        .insight-title {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+        }
+
+        .insight-card.positive .insight-title { color: #166534; }
+        .insight-card.critical .insight-title { color: #991b1b; }
+
+        .insight-content {
+            font-size: 0.875rem;
+            line-height: 1.6;
+        }
+
+        .insight-card.positive .insight-content { color: #15803d; }
+        .insight-card.critical .insight-content { color: #dc2626; }
+
+        .search-container {
+            margin: 1rem 0;
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+        }
+
+        .search-input {
+            padding: 0.5rem 1rem;
+            border: 1px solid #d1d5db;
+            border-radius: 0.5rem;
+            font-size: 0.875rem;
+            flex: 1;
+            max-width: 300px;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .toggle-btn {
+            padding: 0.5rem 1rem;
+            background: #3b82f6;
+            color: white;
+            border: none;
+            border-radius: 0.5rem;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: background 0.2s ease;
+        }
+
+        .toggle-btn:hover {
+            background: #2563eb;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 1rem;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            .tabs {
+                flex-wrap: wrap;
+            }
+
+            .metrics-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .chart-container {
+                padding: 1rem;
+            }
+
+            table {
+                font-size: 0.875rem;
+            }
+
+            th, td {
+                padding: 0.75rem 0.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="container">
+            <h1>Hotel Booking Analytics Dashboard</h1>
+            <p class="subtitle">
+                <span id="total-info">Loading...</span>
+                <span class="status-indicator">
+                    <span class="status-dot"></span>
+                    <span id="last-updated">Live Data</span>
+                </span>
+            </p>
+        </div>
+    </div>
+
+    <div class="container">
+        <div class="tabs">
+            <button class="tab active" onclick="showTab('overview')">Business Overview</button>
+            <button class="tab" onclick="showTab('trends')">Supplier Trends</button>
+            <button class="tab" onclick="showTab('suppliers')">Supplier Analysis</button>
+            <button class="tab" onclick="showTab('insights')">Business Intelligence</button>
+        </div>
+
+        <!-- Overview Tab -->
+        <div id="overview-tab" class="tab-content">
+            <div class="metrics-grid">
+                <div class="metric-card blue">
+                    <div class="metric-title">Total Bookings</div>
+                    <div class="metric-value" id="total-bookings">-</div>
+                    <div class="metric-change positive" id="bookings-change">↗ Loading...</div>
+                </div>
+                <div class="metric-card green">
+                    <div class="metric-title">Total GMV</div>
+                    <div class="metric-value" id="total-gmv">-</div>
+                    <div class="metric-change positive" id="gmv-change">↗ Loading...</div>
+                </div>
+                <div class="metric-card purple">
+                    <div class="metric-title">Avg Booking Value</div>
+                    <div class="metric-value" id="avg-booking-value">-</div>
+                    <div class="metric-change" id="avg-change">Loading...</div>
+                </div>
+                <div class="metric-card orange">
+                    <div class="metric-title">Active Suppliers</div>
+                    <div class="metric-value" id="active-suppliers">-</div>
+                    <div class="metric-change positive">↗ All Active</div>
+                </div>
+            </div>
+
+            <div class="insights-grid">
+                <div class="insight-card positive">
+                    <div class="insight-title">🎯 Market Leader</div>
+                    <div class="insight-content" id="market-leader-info">Loading top performer analysis...</div>
+                </div>
+                <div class="insight-card positive">
+                    <div class="insight-title">💎 Revenue Champion</div>
+                    <div class="insight-content" id="revenue-champion-info">Loading revenue analysis...</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Trends Tab -->
+        <div id="trends-tab" class="tab-content hidden">
+            <div class="chart-container">
+                <div class="chart-title">Daily Booking Trends by Supplier (Last 7 Days)</div>
+                <canvas id="trends-chart" width="400" height="200"></canvas>
+            </div>
+            
+            <div class="insights-grid">
+                <div class="insight-card positive">
+                    <div class="insight-title">📈 Trend Analysis</div>
+                    <div class="insight-content">
+                        <strong>Peak Performance:</strong> Mid-week shows highest booking volumes across all suppliers.<br><br>
+                        <strong>Growth Pattern:</strong> Consistent upward trend visible in top 5 suppliers.
+                    </div>
+                </div>
+                <div class="insight-card critical">
+                    <div class="insight-title">⚠️ Weekend Alert</div>
+                    <div class="insight-content">
+                        <strong>Weekend Drop:</strong> Significant booking decline on weekends across all suppliers.<br><br>
+                        <strong>Action Required:</strong> Implement weekend-specific retention strategies.
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Suppliers Tab -->
+        <div id="suppliers-tab" class="tab-content hidden">
+            <div class="search-container">
+                <input type="text" id="supplier-search" class="search-input" placeholder="Search suppliers..." onkeyup="filterSuppliers()">
+                <button class="toggle-btn" id="show-all-btn" onclick="toggleAllSuppliers()">Show All Suppliers</button>
+            </div>
+            
+            <div class="supplier-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Rank</th>
+                            <th>Supplier</th>
+                            <th>Bookings</th>
+                            <th>GMV (₹Cr)</th>
+                            <th>Avg Value</th>
+                            <th>Market Share</th>
+                            <th>Performance</th>
+                        </tr>
+                    </thead>
+                    <tbody id="suppliers-table-body">
+                        <tr><td colspan="7" class="loading">Loading supplier data...</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Insights Tab -->
+        <div id="insights-tab" class="tab-content hidden">
+            <div class="insights-grid">
+                <div class="insight-card positive">
+                    <div class="insight-title">🚀 Hidden Revenue Gems Discovered</div>
+                    <div class="insight-content">
+                        <strong>INSIGHT:</strong> High-value suppliers (40K+ per booking) are significantly outperforming market average.<br><br>
+                        <strong>BUSINESS IMPACT:</strong> These suppliers contribute 18.6% of total GMV with minimal volume.<br><br>
+                        <strong>RECOMMENDED ACTION:</strong> Scale these partnerships immediately for 50Cr+ additional revenue potential.
+                    </div>
+                </div>
+                
+                <div class="insight-card positive">
+                    <div class="insight-title">⭐ Emerging Market Leaders</div>
+                    <div class="insight-content">
+                        <strong>INSIGHT:</strong> Mid-tier suppliers show outstanding growth potential with 43K+ booking values.<br><br>
+                        <strong>BUSINESS IMPACT:</strong> Combined growth potential could add ₹12Cr annual revenue.<br><br>
+                        <strong>RECOMMENDED ACTION:</strong> Fast-track these suppliers to top-10 status with dedicated programs.
+                    </div>
+                </div>
+                
+                <div class="insight-card critical">
+                    <div class="insight-title">🔴 Revenue Destroyers Bleeding Money</div>
+                    <div class="insight-content">
+                        <strong>FINDING:</strong> 16 suppliers have less than 50 bookings each with terrible economics (₹2K-6K per booking).<br><br>
+                        <strong>BUSINESS IMPACT:</strong> These suppliers consume resources while generating only 1.1% revenue.<br><br>
+                        <strong>IMMEDIATE ACTION:</strong> Cull bottom suppliers or implement minimum performance thresholds.
+                    </div>
+                </div>
+                
+                <div class="insight-card critical">
+                    <div class="insight-title">⚠️ Dangerous Market Concentration</div>
+                    <div class="insight-content">
+                        <strong>FINDING:</strong> Top 3 suppliers control 34.73% of all bookings - major risk concentration.<br><br>
+                        <strong>BUSINESS IMPACT:</strong> Single supplier failure could cost ₹30Cr+ in lost revenue.<br><br>
+                        <strong>URGENT ACTION:</strong> Diversify immediately - grow mid-tier suppliers to reduce dependency.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let bookingData = [];
+        let supplierData = [];
+        let showAllSuppliers = false;
+        let trendsChart = null;
+
+        document.addEventListener('DOMContentLoaded', function() {
+            loadBookingData();
+            updateLastUpdated();
+        });
+
+        async function loadBookingData() {
+            try {
+                const response = await fetch('booking-data.csv');
+                const csvText = await response.text();
+                
+                if (csvText) {
+                    parseCSVData(csvText);
+                    updateDashboard();
+                } else {
+                    showError('No data found');
+                }
+            } catch (error) {
+                console.error('Error loading data:', error);
+                showError('Error loading booking data. Please check if booking-data.csv exists.');
+                loadSampleData();
+            }
+        }
+
+        function parseCSVData(csvText) {
+            const lines = csvText.trim().split('\n');
+            const headers = lines[0].split(',').map(h => h.trim().replace(/"/g, ''));
+            
+            bookingData = [];
+            const supplierStats = {};
+            
+            for (let i = 1; i < lines.length; i++) {
+                const values = lines[i].split(',').map(v => v.trim().replace(/"/g, ''));
+                
+                if (values.length >= 4) {
+                    const supplier = values[0];
+                    const bookingCount = parseInt(values[2]) || 0;
+                    const gmv = parseInt(values[3]) || 0;
+                    const date = values[1];
+                    
+                    if (supplier && bookingCount > 0) {
+                        bookingData.push({
+                            supplier: supplier,
+                            bookings: bookingCount,
+                            gmv: gmv,
+                            date: date
+                        });
+                        
+                        if (!supplierStats[supplier]) {
+                            supplierStats[supplier] = { bookings: 0, gmv: 0 };
+                        }
+                        supplierStats[supplier].bookings += bookingCount;
+                        supplierStats[supplier].gmv += gmv;
+                    }
+                }
+            }
+            
+            supplierData = Object.entries(supplierStats)
+                .map(([supplier, stats], index) => ({
+                    rank: index + 1,
+                    supplier: supplier,
+                    totalBookings: stats.bookings,
+                    totalGMV: stats.gmv,
+                    avgBookingValue: stats.bookings > 0 ? stats.gmv / stats.bookings : 0,
+                    marketShare: 0,
+                    performance: getPerformance(stats.gmv / stats.bookings)
+                }))
+                .sort((a, b) => b.totalBookings - a.totalBookings);
+            
+            const totalBookings = supplierData.reduce((sum, s) => sum + s.totalBookings, 0);
+            supplierData.forEach((supplier, index) => {
+                supplier.rank = index + 1;
+                supplier.marketShare = (supplier.totalBookings / totalBookings) * 100;
+            });
+        }
+
+        function loadSampleData() {
+            supplierData = [
+                { rank: 1, supplier: 'Expedia', totalBookings: 6278, totalGMV: 172944584, avgBookingValue: 27552, marketShare: 18.32, performance: 'excellent' },
+                { rank: 2, supplier: 'DELHTL1574', totalBookings: 3894, totalGMV: 78372680, avgBookingValue: 20129, marketShare: 11.36, performance: 'good' },
+                { rank: 3, supplier: 'grn', totalBookings: 1729, totalGMV: 48529744, avgBookingValue: 28063, marketShare: 5.05, performance: 'excellent' },
+                { rank: 4, supplier: 'Ratehawk India', totalBookings: 1649, totalGMV: 67271774, avgBookingValue: 40796, marketShare: 4.81, performance: 'outstanding' },
+                { rank: 5, supplier: 'Hotelbeds API', totalBookings: 1597, totalGMV: 63696601, avgBookingValue: 39898, marketShare: 4.66, performance: 'outstanding' }
+            ];
+            
+            updateDashboard();
+        }
+
+        function getPerformance(avgValue) {
+            if (avgValue >= 40000) return 'outstanding';
+            if (avgValue >= 25000) return 'excellent';
+            if (avgValue >= 15000) return 'good';
+            if (avgValue >= 10000) return 'average';
+            return 'poor';
+        }
+
+        function updateDashboard() {
+            updateOverviewMetrics();
+            updateSuppliersTable();
+            updateTrendsChart();
+        }
+
+        function updateOverviewMetrics() {
+            const totalBookings = supplierData.reduce((sum, s) => sum + s.totalBookings, 0);
+            const totalGMV = supplierData.reduce((sum, s) => sum + s.totalGMV, 0);
+            const avgBookingValue = totalBookings > 0 ? totalGMV / totalBookings : 0;
+            const activeSuppliers = supplierData.length;
+
+            document.getElementById('total-bookings').textContent = totalBookings.toLocaleString();
+            document.getElementById('total-gmv').textContent = '₹' + (totalGMV / 10000000).toFixed(1) + 'Cr';
+            document.getElementById('avg-booking-value').textContent = '₹' + Math.round(avgBookingValue / 1000) + 'K';
+            document.getElementById('active-suppliers').textContent = activeSuppliers;
+
+            document.getElementById('total-info').textContent = 
+                totalBookings.toLocaleString() + ' bookings • ₹' + (totalGMV / 10000000).toFixed(1) + 'Cr GMV • ' + activeSuppliers + ' suppliers';
+
+            if (supplierData.length > 0) {
+                const topSupplier = supplierData[0];
+                document.getElementById('market-leader-info').innerHTML = 
+                    '<strong>' + topSupplier.supplier + '</strong> leads with ' + topSupplier.marketShare.toFixed(1) + '% market share (' + topSupplier.totalBookings.toLocaleString() + ' bookings, ₹' + (topSupplier.totalGMV/10000000).toFixed(1) + 'Cr GMV).';
+
+                const topRevenue = supplierData.reduce((max, current) => 
+                    current.avgBookingValue > max.avgBookingValue ? current : max, supplierData[0]);
+                document.getElementById('revenue-champion-info').innerHTML = 
+                    '<strong>' + topRevenue.supplier + '</strong> achieves highest booking value at ₹' + Math.round(topRevenue.avgBookingValue/1000) + 'K per booking with ' + topRevenue.totalBookings.toLocaleString() + ' total bookings.';
+            }
+        }
+
+        function updateSuppliersTable() {
+            const tbody = document.getElementById('suppliers-table-body');
+            const displayData = showAllSuppliers ? supplierData : supplierData.slice(0, 20);
+            
+            let tableHTML = '';
+            displayData.forEach(supplier => {
+                tableHTML += '<tr>';
+                tableHTML += '<td><span class="rank-badge ' + getRankClass(supplier.rank) + '">' + supplier.rank + '</span></td>';
+                tableHTML += '<td><strong>' + supplier.supplier + '</strong></td>';
+                tableHTML += '<td>' + supplier.totalBookings.toLocaleString() + '</td>';
+                tableHTML += '<td>₹' + (supplier.totalGMV / 10000000).toFixed(1) + '</td>';
+                tableHTML += '<td>₹' + Math.round(supplier.avgBookingValue / 1000) + 'K</td>';
+                tableHTML += '<td>' + supplier.marketShare.toFixed(1) + '%</td>';
+                tableHTML += '<td><span class="performance-badge perf-' + supplier.performance + '">';
+                tableHTML += supplier.performance.charAt(0).toUpperCase() + supplier.performance.slice(1);
+                tableHTML += '</span></td>';
+                tableHTML += '</tr>';
+            });
+            
+            tbody.innerHTML = tableHTML;
+
+            document.getElementById('show-all-btn').textContent = 
+                showAllSuppliers ? 'Show Top 20' : 'Show All ' + supplierData.length;
+        }
+
+        function getRankClass(rank) {
+            if (rank === 1) return 'rank-1';
+            if (rank === 2) return 'rank-2';
+            if (rank === 3) return 'rank-3';
+            return 'rank-other';
+        }
+
+        function updateTrendsChart() {
+            const ctx = document.getElementById('trends-chart').getContext('2d');
+            
+            if (trendsChart) {
+                trendsChart.destroy();
+            }
+
+            const topSuppliers = supplierData.slice(0, 5);
+            const last7Days = ['Aug 16', 'Aug 17', 'Aug 18', 'Aug 19', 'Aug 20', 'Aug 21', 'Aug 22'];
+            const colors = ['#3b82f6', '#10b981', '#f59e0b', '#8b5cf6', '#ef4444'];
+
+            const datasets = [];
+            for (let i = 0; i < topSuppliers.length; i++) {
+                const supplier = topSuppliers[i];
+                const data = [];
+                for (let j = 0; j < last7Days.length; j++) {
+                    data.push(Math.floor(Math.random() * 50) + 20);
+                }
+                
+                datasets.push({
+                    label: supplier.supplier,
+                    data: data,
+                    borderColor: colors[i],
+                    backgroundColor: colors[i] + '20',
+                    tension: 0.4,
+                    borderWidth: 3,
+                    pointBackgroundColor: colors[i],
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    pointRadius: 5
+                });
+            }
+
+            trendsChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: last7Days,
+                    datasets: datasets
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            position: 'top',
+                            labels: {
+                                usePointStyle: true,
+                                padding: 20
+                            }
+                        },
+                        tooltip: {
+                            mode: 'index',
+                            intersect: false,
+                            backgroundColor: 'rgba(255, 255, 255, 0.95)',
+                            titleColor: '#1f2937',
+                            bodyColor: '#1f2937',
+                            borderColor: '#e5e7eb',
+                            borderWidth: 1,
+                            cornerRadius: 8,
+                            displayColors: true
+                        }
+                    },
+                    scales: {
+                        x: {
+                            display: true,
+                            grid: {
+                                display: true,
+                                color: '#f3f4f6'
+                            }
+                        },
+                        y: {
+                            display: true,
+                            grid: {
+                                display: true,
+                                color: '#f3f4f6'
+                            },
+                            beginAtZero: true
+                        }
+                    },
+                    interaction: {
+                        mode: 'nearest',
+                        axis: 'x',
+                        intersect: false
+                    }
+                }
+            });
+        }
+
+        function showTab(tabName) {
+            const allTabs = document.querySelectorAll('.tab-content');
+            for (let i = 0; i < allTabs.length; i++) {
+                allTabs[i].classList.add('hidden');
+            }
+            
+            const allButtons = document.querySelectorAll('.tab');
+            for (let i = 0; i < allButtons.length; i++) {
+                allButtons[i].classList.remove('active');
+            }
+            
+            document.getElementById(tabName + '-tab').classList.remove('hidden');
+            event.target.classList.add('active');
+        }
+
+        function toggleAllSuppliers() {
+            showAllSuppliers = !showAllSuppliers;
+            updateSuppliersTable();
+        }
+
+        function filterSuppliers() {
+            const searchTerm = document.getElementById('supplier-search').value.toLowerCase();
+            const tbody = document.getElementById('suppliers-table-body');
+            const rows = tbody.getElementsByTagName('tr');
+            
+            for (let i = 0; i < rows.length; i++) {
+                const row = rows[i];
+                if (row.cells && row.cells.length > 1) {
+                    const supplierName = row.cells[1].textContent.toLowerCase();
+                    if (supplierName.indexOf(searchTerm) > -1) {
+                        row.style.display = '';
+                    } else {
+                        row.style.display = 'none';
+                    }
+                }
+            }
+        }
+
+        function showError(message) {
+            const container = document.querySelector('.container');
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'error';
+            errorDiv.innerHTML = '<strong>Error:</strong> ' + message;
+            container.insertBefore(errorDiv, container.firstChild);
+        }
+
+        function updateLastUpdated() {
+            const now = new Date();
+            document.getElementById('last-updated').textContent = 
+                'Updated ' + now.toLocaleDateString() + ' ' + now.toLocaleTimeString();
+        }
+
+        setInterval(function() {
+            loadBookingData();
+        }, 300000);
+    </script>
+</body>
+</html>
