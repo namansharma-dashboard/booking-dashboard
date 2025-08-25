@@ -678,12 +678,12 @@
                     </div>
                     
                     <div class="metric-card green">
-                        <div class="metric-title">Total Revenue</div>
-                        <div class="metric-value" id="total-revenue">Loading...</div>
-                        <div class="metric-change positive" id="revenue-change">
+                        <div class="metric-title">Total GMV</div>
+                        <div class="metric-value" id="total-gmv">Loading...</div>
+                        <div class="metric-change positive" id="gmv-change">
                             ↗ Loading...
                         </div>
-                        <div class="trend-indicator" id="revenue-trend">📈</div>
+                        <div class="trend-indicator" id="gmv-trend">📈</div>
                     </div>
                     
                     <div class="metric-card purple">
@@ -708,7 +708,7 @@
                             <button class="chart-btn active" onclick="toggleChartType('line')">Line</button>
                             <button class="chart-btn" onclick="toggleChartType('bar')">Bar</button>
                             <button class="chart-btn" onclick="toggleChartMetric('bookings')">Bookings</button>
-                            <button class="chart-btn" onclick="toggleChartMetric('revenue')">Revenue</button>
+                            <button class="chart-btn" onclick="toggleChartMetric('gmv')">GMV</button>
                             <button class="chart-btn" onclick="toggleChartMetric('both')">Both</button>
                         </div>
                     </div>
@@ -783,6 +783,14 @@
     </div>
 
     <script>
+        // CORRECT COLUMN MAPPINGS FOR YOUR CSV DATA
+        const COLUMN_MAPPINGS = {
+            name: 'name',                    // Supplier name
+            date: 'booking_date (Date)',     // Booking date  
+            bookings: 'id',                  // Number of bookings
+            gmv: 'amount_in_inr'            // GMV/Revenue
+        };
+
         let rawBookingData = [];
         let processedData = {};
         let filteredData = {};
@@ -802,6 +810,7 @@
                 
                 // Try different possible filenames
                 const possibleFiles = [
+                    'Hotel API v2_Supplier Level_Pivot table 4.csv',
                     'booking-data.csv',
                     'booking-data-updated.csv',
                     'Hotel API v2_Supplier Level_Pivot table 2.csv'
@@ -836,7 +845,7 @@
                         rawBookingData = results.data;
                         console.log('Loaded booking data:', rawBookingData.length, 'rows');
                         console.log('Sample row:', rawBookingData[0]);
-                        console.log('Available columns:', Object.keys(rawBookingData[0] || {}));
+                        console.log('Using column mappings:', COLUMN_MAPPINGS);
                         
                         processData();
                         generateAIInsights();
@@ -845,7 +854,7 @@
                         createSupplierCards();
                         applyFilters();
                         hideLoading();
-                        showSuccess(`Dashboard loaded with AI insights from ${usedFile}!`);
+                        showSuccess(`Dashboard loaded with ${rawBookingData.length} rows from ${usedFile}!`);
                     },
                     error: function(error) {
                         console.error('CSV parsing error:', error);
@@ -860,49 +869,19 @@
             }
         }
 
-        // Enhanced data processing
+        // Enhanced data processing with CORRECT column mappings
         function processData() {
             if (rawBookingData.length === 0) return;
 
-            // Flexible column detection
-            const sampleRow = rawBookingData[0];
-            const columns = Object.keys(sampleRow);
-            
-            // Try to identify column mappings
-            const nameColumn = columns.find(col => 
-                col.toLowerCase().includes('name') || 
-                col.toLowerCase().includes('supplier')
-            ) || columns[0];
-            
-            const dateColumn = columns.find(col => 
-                col.toLowerCase().includes('date') || 
-                col.toLowerCase().includes('time')
-            ) || columns[1];
-            
-            const bookingColumn = columns.find(col => 
-                col.toLowerCase().includes('booking') || 
-                col.toLowerCase().includes('count') ||
-                col.toLowerCase().includes('id')
-            ) || columns[2];
-            
-            const revenueColumn = columns.find(col => 
-                col.toLowerCase().includes('amount') || 
-                col.toLowerCase().includes('revenue') ||
-                col.toLowerCase().includes('inr') ||
-                col.toLowerCase().includes('value')
-            ) || columns[3];
+            console.log('Processing data with correct column mappings...');
 
-            console.log('Column mappings:', {
-                name: nameColumn,
-                date: dateColumn,
-                bookings: bookingColumn,
-                revenue: revenueColumn
-            });
-
-            const uniqueSuppliers = [...new Set(rawBookingData.map(row => row[nameColumn]))].filter(Boolean);
-            const uniqueDates = [...new Set(rawBookingData.map(row => row[dateColumn]))].filter(Boolean);
+            const uniqueSuppliers = [...new Set(rawBookingData.map(row => row[COLUMN_MAPPINGS.name]))].filter(Boolean);
+            const uniqueDates = [...new Set(rawBookingData.map(row => row[COLUMN_MAPPINGS.date]))].filter(Boolean);
             
             uniqueDates.sort((a, b) => new Date(a) - new Date(b));
+
+            console.log('Found suppliers:', uniqueSuppliers.length);
+            console.log('Found dates:', uniqueDates.length);
 
             const dailyTotals = {};
             const supplierData = {};
@@ -911,36 +890,36 @@
             // Initialize structures
             uniqueSuppliers.forEach(supplier => {
                 supplierData[supplier] = {};
-                supplierTotals[supplier] = { bookings: 0, revenue: 0, days: 0 };
+                supplierTotals[supplier] = { bookings: 0, gmv: 0, days: 0 };
                 uniqueDates.forEach(date => {
-                    supplierData[supplier][date] = { bookings: 0, revenue: 0 };
+                    supplierData[supplier][date] = { bookings: 0, gmv: 0 };
                 });
             });
 
             uniqueDates.forEach(date => {
-                dailyTotals[date] = { bookings: 0, revenue: 0 };
+                dailyTotals[date] = { bookings: 0, gmv: 0 };
             });
 
-            // Aggregate data
+            // Aggregate data using CORRECT column mappings
             rawBookingData.forEach(row => {
-                if (row[nameColumn] && row[dateColumn]) {
-                    const supplier = row[nameColumn];
-                    const date = row[dateColumn];
-                    const bookings = parseInt(row[bookingColumn]) || 0;
-                    const revenue = parseFloat(row[revenueColumn]) || 0;
+                const supplier = row[COLUMN_MAPPINGS.name];
+                const date = row[COLUMN_MAPPINGS.date]; 
+                const bookings = parseInt(row[COLUMN_MAPPINGS.bookings]) || 0;
+                const gmv = parseInt(row[COLUMN_MAPPINGS.gmv]) || 0;
 
+                if (supplier && date) {
                     if (supplierData[supplier] && supplierData[supplier][date] !== undefined) {
                         supplierData[supplier][date].bookings += bookings;
-                        supplierData[supplier][date].revenue += revenue;
+                        supplierData[supplier][date].gmv += gmv;
                         
                         supplierTotals[supplier].bookings += bookings;
-                        supplierTotals[supplier].revenue += revenue;
+                        supplierTotals[supplier].gmv += gmv;
                         if (bookings > 0) supplierTotals[supplier].days += 1;
                     }
 
                     if (dailyTotals[date]) {
                         dailyTotals[date].bookings += bookings;
-                        dailyTotals[date].revenue += revenue;
+                        dailyTotals[date].gmv += gmv;
                     }
                 }
             });
@@ -954,6 +933,11 @@
             };
 
             filteredData = { ...processedData };
+
+            console.log('Processing complete. Sample totals:', {
+                totalBookings: Object.values(dailyTotals).reduce((sum, day) => sum + day.bookings, 0),
+                totalGMV: Object.values(dailyTotals).reduce((sum, day) => sum + day.gmv, 0)
+            });
         }
 
         // Generate AI-powered insights
@@ -965,14 +949,14 @@
             const redFlags = [];
 
             suppliers.forEach(([name, data]) => {
-                const avgBookingValue = data.bookings > 0 ? data.revenue / data.bookings : 0;
+                const avgBookingValue = data.bookings > 0 ? data.gmv / data.bookings : 0;
                 const dailyAvg = data.days > 0 ? data.bookings / data.days : 0;
                 
-                // Green flags
+                // Green flags - opportunities
                 if (data.bookings > 1000 && avgBookingValue > 2000) {
                     greenFlags.push({
                         supplier: name,
-                        message: `High-value partner with ${data.bookings.toLocaleString()} bookings and ₹${Math.round(avgBookingValue)}k avg value`
+                        message: `High-value partner with ${data.bookings.toLocaleString()} bookings and ₹${Math.round(avgBookingValue)} avg value`
                     });
                 }
                 
@@ -983,7 +967,7 @@
                     });
                 }
 
-                // Red flags
+                // Red flags - issues
                 if (data.bookings > 0 && avgBookingValue < 1000) {
                     redFlags.push({
                         supplier: name,
@@ -1058,13 +1042,29 @@
 
             let filtered = JSON.parse(JSON.stringify(processedData));
 
-            // Apply filters (simplified for now)
+            // Apply date range filter
+            if (dateRange !== 'all') {
+                const days = parseInt(dateRange);
+                const cutoffDate = new Date();
+                cutoffDate.setDate(cutoffDate.getDate() - days);
+                
+                filtered.dates = filtered.dates.filter(date => new Date(date) >= cutoffDate);
+                
+                const newDailyTotals = {};
+                filtered.dates.forEach(date => {
+                    newDailyTotals[date] = filtered.dailyTotals[date];
+                });
+                filtered.dailyTotals = newDailyTotals;
+            }
+
+            // Apply supplier search filter
             if (supplierSearch) {
                 filtered.suppliers = filtered.suppliers.filter(supplier => 
                     supplier.toLowerCase().includes(supplierSearch)
                 );
             }
 
+            // Apply minimum bookings filter
             if (minBookings > 0) {
                 filtered.suppliers = filtered.suppliers.filter(supplier => 
                     filtered.supplierTotals[supplier].bookings >= minBookings
@@ -1095,7 +1095,7 @@
             const suppliers = Object.entries(filteredData.supplierTotals)
                 .filter(([name]) => filteredData.suppliers.includes(name))
                 .map(([name, data]) => {
-                    const avgBookingValue = data.bookings > 0 ? data.revenue / data.bookings : 0;
+                    const avgBookingValue = data.bookings > 0 ? data.gmv / data.bookings : 0;
                     const dailyAvg = data.days > 0 ? data.bookings / data.days : 0;
                     
                     let score = 0;
@@ -1149,23 +1149,40 @@
             if (!filteredData.dailyTotals) return;
 
             let totalBookings = 0;
-            let totalRevenue = 0;
+            let totalGMV = 0;
 
             Object.values(filteredData.dailyTotals).forEach(day => {
                 totalBookings += day.bookings;
-                totalRevenue += day.revenue;
+                totalGMV += day.gmv;
             });
 
             const activeSuppliers = filteredData.suppliers.length;
-            const avgBookingValue = totalBookings > 0 ? Math.round(totalRevenue / totalBookings) : 0;
+            const avgBookingValue = totalBookings > 0 ? Math.round(totalGMV / totalBookings) : 0;
 
+            // Calculate trends (last 7 days vs previous 7)
+            const dates = filteredData.dates.slice().sort((a, b) => new Date(a) - new Date(b));
+            const last7 = dates.slice(-7);
+            const prev7 = dates.slice(-14, -7);
+
+            const last7Bookings = last7.reduce((sum, date) => sum + (filteredData.dailyTotals[date]?.bookings || 0), 0);
+            const prev7Bookings = prev7.reduce((sum, date) => sum + (filteredData.dailyTotals[date]?.bookings || 0), 0);
+
+            const bookingsTrend = prev7Bookings > 0 ? ((last7Bookings - prev7Bookings) / prev7Bookings * 100) : 0;
+
+            // Update DOM
             document.getElementById('total-bookings').textContent = totalBookings.toLocaleString();
-            document.getElementById('total-revenue').textContent = '₹' + (totalRevenue / 10000000).toFixed(2) + 'Cr';
+            document.getElementById('total-gmv').textContent = '₹' + (totalGMV / 10000000).toFixed(2) + 'Cr';
             document.getElementById('avg-booking-value').textContent = '₹' + avgBookingValue.toLocaleString();
             document.getElementById('active-suppliers').textContent = activeSuppliers;
 
+            // Update trend indicators
+            document.getElementById('bookings-change').textContent = 
+                `${bookingsTrend >= 0 ? '↗' : '↘'} ${Math.abs(bookingsTrend).toFixed(1)}% vs last week`;
+            document.getElementById('bookings-change').className = 
+                `metric-change ${bookingsTrend >= 0 ? 'positive' : 'negative'}`;
+
             document.getElementById('summary-stats').textContent = 
-                `${totalBookings.toLocaleString()} bookings • ₹${(totalRevenue / 10000000).toFixed(2)}Cr revenue • ${activeSuppliers} suppliers`;
+                `${totalBookings.toLocaleString()} bookings • ₹${(totalGMV / 10000000).toFixed(2)}Cr GMV • ${activeSuppliers} suppliers`;
 
             document.getElementById('last-updated').textContent = 'Updated ' + new Date().toLocaleString();
         }
@@ -1193,7 +1210,7 @@
             });
 
             const bookingsData = filteredData.dates.map(date => filteredData.dailyTotals[date].bookings);
-            const revenueData = filteredData.dates.map(date => filteredData.dailyTotals[date].revenue / 100000);
+            const gmvData = filteredData.dates.map(date => filteredData.dailyTotals[date].gmv / 100000); // Scale GMV
 
             let datasets = [];
             
@@ -1209,10 +1226,10 @@
                 });
             }
 
-            if (currentMetric === 'revenue' || currentMetric === 'both') {
+            if (currentMetric === 'gmv' || currentMetric === 'both') {
                 datasets.push({
-                    label: 'Revenue (₹ Lakhs)',
-                    data: revenueData,
+                    label: 'GMV (₹ Lakhs)',
+                    data: gmvData,
                     borderColor: '#10b981',
                     backgroundColor: currentChartType === 'bar' ? '#10b981' : 'rgba(16, 185, 129, 0.1)',
                     borderWidth: 2,
@@ -1230,13 +1247,18 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
                     plugins: {
                         legend: { display: currentMetric === 'both' }
                     },
                     scales: {
                         y: {
                             beginAtZero: true,
-                            grid: { color: '#f1f5f9' }
+                            grid: { color: '#f1f5f9' },
+                            position: 'left'
                         },
                         y1: currentMetric === 'both' ? {
                             type: 'linear',
@@ -1257,21 +1279,47 @@
                 charts.trends.destroy();
             }
 
-            // Simple trends chart for now
-            const suppliers = Object.entries(filteredData.supplierTotals)
-                .sort((a, b) => b[1].bookings - a[1].bookings)
-                .slice(0, 5);
+            if (!filteredData.supplierData) return;
 
-            const colors = ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6'];
+            // Get top suppliers based on filter
+            let suppliersToShow = [];
+            const supplierTotals = Object.entries(filteredData.supplierTotals)
+                .filter(([name]) => filteredData.suppliers.includes(name))
+                .sort((a, b) => b[1].bookings - a[1].bookings);
 
-            const datasets = suppliers.map(([name, data], index) => ({
-                label: name,
-                data: filteredData.dates.map(date => filteredData.supplierData[name][date]?.bookings || 0),
-                borderColor: colors[index],
-                backgroundColor: colors[index] + '20',
-                borderWidth: 2,
-                fill: false
-            }));
+            switch (currentFilter) {
+                case 'top5':
+                    suppliersToShow = supplierTotals.slice(0, 5).map(([name]) => name);
+                    break;
+                case 'top10':
+                    suppliersToShow = supplierTotals.slice(0, 10).map(([name]) => name);
+                    break;
+                case 'growing':
+                    // Simple growth detection
+                    suppliersToShow = supplierTotals
+                        .filter(([name, data]) => data.days > 10 && data.bookings > 200)
+                        .slice(0, 8)
+                        .map(([name]) => name);
+                    break;
+                default:
+                    suppliersToShow = supplierTotals.slice(0, 6).map(([name]) => name);
+            }
+
+            const colors = ['#3b82f6', '#ef4444', '#10b981', '#f59e0b', '#8b5cf6', '#ec4899'];
+
+            const datasets = suppliersToShow.map((supplier, index) => {
+                const data = filteredData.dates.map(date => filteredData.supplierData[supplier][date]?.bookings || 0);
+                
+                return {
+                    label: supplier,
+                    data: data,
+                    borderColor: colors[index % colors.length],
+                    backgroundColor: colors[index % colors.length] + '20',
+                    borderWidth: 2,
+                    fill: false,
+                    tension: 0.1
+                };
+            });
 
             charts.trends = new Chart(ctx, {
                 type: 'line',
@@ -1285,7 +1333,19 @@
                 options: {
                     responsive: true,
                     maintainAspectRatio: false,
-                    plugins: { legend: { display: true } },
+                    interaction: {
+                        mode: 'index',
+                        intersect: false,
+                    },
+                    plugins: {
+                        legend: { 
+                            position: 'top',
+                            labels: {
+                                boxWidth: 12,
+                                font: { size: 10 }
+                            }
+                        }
+                    },
                     scales: {
                         y: { beginAtZero: true, grid: { color: '#f1f5f9' } },
                         x: { grid: { color: '#f1f5f9' } }
@@ -1301,9 +1361,24 @@
                 charts.predictions.destroy();
             }
 
-            // Simple prediction chart
+            // Simple prediction based on recent trends
+            const recentDays = filteredData.dates.slice(-14);
+            const bookingsData = recentDays.map(date => filteredData.dailyTotals[date].bookings);
+            
+            // Calculate simple trend
+            const avgRecent = bookingsData.slice(-7).reduce((a, b) => a + b, 0) / 7;
+            const avgPrevious = bookingsData.slice(0, 7).reduce((a, b) => a + b, 0) / 7;
+            const trendFactor = avgPrevious > 0 ? avgRecent / avgPrevious : 1;
+
+            // Generate predictions
+            const predictions = [];
+            for (let i = 1; i <= 7; i++) {
+                const basePrediction = avgRecent * trendFactor;
+                const randomVariation = 0.8 + Math.random() * 0.4; // ±20% variation
+                predictions.push(Math.round(basePrediction * randomVariation));
+            }
+
             const labels = ['Today', 'Tomorrow', '+2 Days', '+3 Days', '+4 Days', '+5 Days', '+6 Days'];
-            const predictions = [75, 82, 68, 91, 85, 73, 88];
 
             charts.predictions = new Chart(ctx, {
                 type: 'line',
@@ -1316,7 +1391,8 @@
                         backgroundColor: 'rgba(239, 68, 68, 0.1)',
                         borderWidth: 3,
                         borderDash: [5, 5],
-                        fill: true
+                        fill: true,
+                        tension: 0.4
                     }]
                 },
                 options: {
@@ -1342,8 +1418,9 @@
                 .filter(([name]) => filteredData.suppliers.includes(name))
                 .map(([name, data]) => ({
                     x: data.bookings,
-                    y: data.bookings > 0 ? data.revenue / data.bookings : 0,
-                    supplier: name
+                    y: data.bookings > 0 ? data.gmv / data.bookings : 0,
+                    supplier: name,
+                    gmv: data.gmv
                 }))
                 .filter(point => point.x > 0);
 
@@ -1353,10 +1430,18 @@
                     datasets: [{
                         label: 'Suppliers',
                         data: scatterData,
-                        backgroundColor: '#3b82f6',
+                        backgroundColor: scatterData.map(point => {
+                            if (point.x > 500 && point.y > 2000) return '#10b981'; // High volume, high value
+                            if (point.x > 500) return '#f59e0b'; // High volume, low value
+                            if (point.y > 2000) return '#8b5cf6'; // Low volume, high value
+                            return '#ef4444'; // Low volume, low value
+                        }),
                         borderColor: '#ffffff',
                         borderWidth: 2,
-                        pointRadius: 8
+                        pointRadius: scatterData.map(point => {
+                            const radius = Math.max(6, Math.min(15, Math.sqrt(point.gmv) / 1000));
+                            return radius;
+                        })
                     }]
                 },
                 options: {
@@ -1368,10 +1453,16 @@
                             callbacks: {
                                 label: function(context) {
                                     const point = context.raw;
+                                    let category = 'Needs Improvement';
+                                    if (point.x > 500 && point.y > 2000) category = '⭐ Star Performer';
+                                    else if (point.x > 500) category = '🔧 High Volume';
+                                    else if (point.y > 2000) category = '💎 Premium Partner';
+                                    
                                     return [
-                                        `${point.supplier}`,
+                                        `${point.supplier} (${category})`,
                                         `Bookings: ${point.x.toLocaleString()}`,
-                                        `Avg Value: ₹${Math.round(point.y)}`
+                                        `Avg Value: ₹${Math.round(point.y)}`,
+                                        `Total GMV: ₹${Math.round(point.gmv/100000)}L`
                                     ];
                                 }
                             }
@@ -1379,7 +1470,7 @@
                     },
                     scales: {
                         x: {
-                            title: { display: true, text: 'Total Bookings' },
+                            title: { display: true, text: 'Total Bookings (Volume)' },
                             grid: { color: '#f1f5f9' }
                         },
                         y: {
@@ -1482,7 +1573,7 @@
 
         // Initialize dashboard
         document.addEventListener('DOMContentLoaded', function() {
-            console.log('AI-Enhanced Dashboard initializing...');
+            console.log('AI-Enhanced Dashboard initializing with CORRECT column mappings...');
             loadBookingData();
         });
     </script>
