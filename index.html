@@ -1706,6 +1706,10 @@
                 Papa.parse(csvText, {
                     header: true,
                     skipEmptyLines: true,
+                    quotes: true,        // Handle quoted fields
+                    quoteChar: '"',      // Specify quote character
+                    escapeChar: '"',     // Handle escaped quotes
+                    delimiter: ',',      // Specify comma delimiter
                     complete: function(results) {
                         rawBookingData = results.data;
                         console.log('Loaded booking data:', rawBookingData.length, 'rows');
