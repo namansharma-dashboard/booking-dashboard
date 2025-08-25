@@ -100,57 +100,7 @@
             padding: 2rem 0;
         }
 
-        .upload-section {
-            background: linear-gradient(135deg, #3b82f6, #1d4ed8);
-            color: white;
-            border-radius: 1rem;
-            padding: 1.5rem;
-            margin-bottom: 2rem;
-            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
-        }
 
-        .upload-title {
-            font-size: 1.25rem;
-            font-weight: 600;
-            margin-bottom: 1rem;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-        }
-
-        .upload-info {
-            background: rgba(255, 255, 255, 0.1);
-            padding: 1rem;
-            border-radius: 0.5rem;
-            margin-bottom: 1rem;
-            backdrop-filter: blur(10px);
-        }
-
-        .upload-steps {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-            gap: 1rem;
-        }
-
-        .upload-step {
-            background: rgba(255, 255, 255, 0.15);
-            padding: 1rem;
-            border-radius: 0.5rem;
-            backdrop-filter: blur(10px);
-            border: 1px solid rgba(255, 255, 255, 0.2);
-        }
-
-        .step-number {
-            background: rgba(255, 255, 255, 0.3);
-            width: 2rem;
-            height: 2rem;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 700;
-            margin-bottom: 0.5rem;
-        }
 
         .filters-section {
             background: white;
@@ -899,13 +849,28 @@
                 Papa.parse(csvText, {
                     header: true,
                     skipEmptyLines: true,
+                    dynamicTyping: false, // Keep as strings initially
                     complete: function(results) {
-                        rawBookingData = results.data;
-                        console.log('Loaded booking data:', rawBookingData.length, 'rows');
+                        console.log('Raw CSV parsing results:', results);
                         
-                        // Update UI with current file info
-                        document.getElementById('current-file').textContent = usedFile;
-                        document.getElementById('file-timestamp').textContent = new Date().toLocaleString();
+                        if (!results.data || results.data.length === 0) {
+                            throw new Error('CSV file is empty or could not be parsed');
+                        }
+                        
+                        // Filter out any completely empty rows
+                        rawBookingData = results.data.filter(row => {
+                            return row && typeof row === 'object' && Object.keys(row).length > 0 &&
+                                   (row.name || row[COLUMN_MAPPINGS.name]) && 
+                                   (row['booking_date (Date)'] || row[COLUMN_MAPPINGS.date]);
+                        });
+                        
+                        console.log('Filtered booking data:', rawBookingData.length, 'valid rows');
+                        console.log('Sample row:', rawBookingData[0]);
+                        console.log('Available columns:', Object.keys(rawBookingData[0] || {}));
+                        
+                        if (rawBookingData.length === 0) {
+                            throw new Error('No valid data rows found in CSV. Please check the file format.');
+                        }
                         
                         processSmartData();
                         generateRealAIInsights();
@@ -916,6 +881,7 @@
                     error: function(error) {
                         console.error('CSV parsing error:', error);
                         showError('Failed to parse CSV data: ' + error.message);
+                        hideLoading();
                     }
                 });
                 
@@ -945,49 +911,57 @@
             const supplierTotals = {};
             const supplierMetrics = {}; // NEW: Advanced metrics
 
-            // Initialize structures
+            // Initialize structures with null checks
             uniqueSuppliers.forEach(supplier => {
-                supplierData[supplier] = {};
-                supplierTotals[supplier] = { bookings: 0, gmv: 0, days: 0 };
-                supplierMetrics[supplier] = {
-                    dailyBookings: [],
-                    weeklyTrends: [],
-                    consistency: 0,
-                    growthRate: 0,
-                    volatility: 0,
-                    efficiency: 0
-                };
-                
-                uniqueDates.forEach(date => {
-                    supplierData[supplier][date] = { bookings: 0, gmv: 0 };
-                });
+                if (supplier) {
+                    supplierData[supplier] = {};
+                    supplierTotals[supplier] = { bookings: 0, gmv: 0, days: 0 };
+                    supplierMetrics[supplier] = {
+                        dailyBookings: [],
+                        weeklyTrends: [],
+                        consistency: 0,
+                        growthRate: 0,
+                        volatility: 0,
+                        efficiency: 0
+                    };
+                    
+                    uniqueDates.forEach(date => {
+                        if (date) {
+                            supplierData[supplier][date] = { bookings: 0, gmv: 0 };
+                        }
+                    });
+                }
             });
 
             uniqueDates.forEach(date => {
-                dailyTotals[date] = { bookings: 0, gmv: 0 };
+                if (date) {
+                    dailyTotals[date] = { bookings: 0, gmv: 0 };
+                }
             });
 
-            // Process and aggregate data
-            rawBookingData.forEach(row => {
-                const supplier = row[COLUMN_MAPPINGS.name];
-                const date = row[COLUMN_MAPPINGS.date];
-                const bookings = parseInt(row[COLUMN_MAPPINGS.bookings]) || 0;
-                const gmv = parseInt(row[COLUMN_MAPPINGS.gmv]) || 0;
+            // Process and aggregate data with better error handling
+            rawBookingData.forEach((row, index) => {
+                try {
+                    const supplier = row[COLUMN_MAPPINGS.name];
+                    const date = row[COLUMN_MAPPINGS.date];
+                    const bookings = parseInt(row[COLUMN_MAPPINGS.bookings]) || 0;
+                    const gmv = parseInt(row[COLUMN_MAPPINGS.gmv]) || 0;
 
-                if (supplier && date) {
-                    if (supplierData[supplier] && supplierData[supplier][date] !== undefined) {
+                    if (supplier && date && supplierData[supplier] && supplierData[supplier][date]) {
                         supplierData[supplier][date].bookings += bookings;
                         supplierData[supplier][date].gmv += gmv;
                         
                         supplierTotals[supplier].bookings += bookings;
                         supplierTotals[supplier].gmv += gmv;
                         if (bookings > 0) supplierTotals[supplier].days += 1;
-                    }
 
-                    if (dailyTotals[date]) {
-                        dailyTotals[date].bookings += bookings;
-                        dailyTotals[date].gmv += gmv;
+                        if (dailyTotals[date]) {
+                            dailyTotals[date].bookings += bookings;
+                            dailyTotals[date].gmv += gmv;
+                        }
                     }
+                } catch (error) {
+                    console.warn(`Error processing row ${index}:`, error, row);
                 }
             });
 
