@@ -106,6 +106,7 @@ Expedia,"Jun 28, 2025",45,1190763
 DELHTL1574,"Jul 2, 2025",45,763517
 Expedia,"Aug 4, 2025",45,1011404
 Expedia,"Aug 5, 2025",45,1642665
+Expedia,"Aug 23, 2025",45,790962
 Expedia,"May 25, 2025",44,966589
 DELHTL1574,"Jun 30, 2025",44,1284111
 Expedia,"Jul 31, 2025",44,1554333
@@ -149,6 +150,8 @@ DELHTL1574,"Jun 20, 2025",37,519972
 Ratehawk India,"May 16, 2025",36,1782802
 Nuitee,"Jun 11, 2025",36,1273376
 Expedia,"Jul 29, 2025",36,882745
+Ottila,"Aug 23, 2025",36,1561867
+Tourmind,"Aug 23, 2025",36,1083995
 Nuitee,"May 5, 2025",35,1154461
 Ratehawk India,"May 5, 2025",35,1288364
 Expedia,"May 8, 2025",35,1849828
@@ -185,6 +188,7 @@ Nuitee,"Jun 20, 2025",32,1487617
 Expedia,"Jul 13, 2025",32,1029520
 Ratehawk India,"Aug 6, 2025",32,1166254
 Ottila,"Aug 16, 2025",32,704342
+Expedia,"Aug 24, 2025",32,656099
 Ratehawk India,"May 21, 2025",31,827467
 Ratehawk India,"May 26, 2025",31,942137
 Webbeds,"May 29, 2025",31,1419904
@@ -203,6 +207,7 @@ Nuitee,"Jun 13, 2025",30,1482220
 Ottila,"Aug 11, 2025",30,595862
 Ottila,"Aug 21, 2025",30,1034170
 grn,"Aug 22, 2025",30,717248
+Tourmind,"Aug 24, 2025",30,814485
 Ratehawk India,"May 14, 2025",29,1400793
 DELHTL1574,"Jun 5, 2025",29,453920
 Webbeds,"Jun 12, 2025",29,1086476
@@ -222,6 +227,7 @@ Nuitee,"Jun 19, 2025",28,892748
 DELHTL1574,"Jul 14, 2025",28,448793
 Hotelbeds API,"Jul 25, 2025",28,670925
 Ottila,"Aug 13, 2025",28,817928
+Webbeds,"Aug 23, 2025",28,1093703
 Expedia,"May 4, 2025",27,1035689
 Expedia,"Jun 1, 2025",27,874925
 Webbeds,"Jun 14, 2025",27,1290943
@@ -299,6 +305,7 @@ Ottila,"Aug 9, 2025",24,987543
 DELHTL1574,"Aug 9, 2025",24,406639
 grn,"Aug 9, 2025",24,1019743
 Ottila,"Aug 10, 2025",24,661999
+ElevateDMC,"Aug 23, 2025",24,2628384
 Webbeds,"May 1, 2025",23,643235
 ClearTrip API,"May 7, 2025",23,325891
 DELHTL1574,"May 15, 2025",23,610189
@@ -342,6 +349,7 @@ DELHTL1574,"Aug 18, 2025",22,312562
 Webbeds,"Aug 19, 2025",22,663867
 Nuitee,"Aug 20, 2025",22,377725
 Nuitee,"Aug 22, 2025",22,307483
+ClearTrip API,"Aug 23, 2025",22,191579
 Ratehawk India,"May 6, 2025",21,806983
 Expedia,"May 13, 2025",21,1672702
 Expedia,"May 14, 2025",21,929198
@@ -381,6 +389,7 @@ grn,"Aug 11, 2025",21,687293
 grn,"Aug 13, 2025",21,474604
 Ottila,"Aug 14, 2025",21,611941
 Nuitee,"Aug 21, 2025",21,405692
+ClearTrip API,"Aug 24, 2025",21,179811
 ClearTrip API,"May 2, 2025",20,152359
 Dida,"May 6, 2025",20,411766
 Within Earth,"May 14, 2025",20,553425
@@ -511,6 +520,8 @@ DELHTL1574,"Aug 20, 2025",18,297149
 Webbeds,"Aug 20, 2025",18,540154
 Dida,"Aug 21, 2025",18,573324
 travelguru,"Aug 22, 2025",18,150740
+Dida,"Aug 23, 2025",18,349509
+DELHTL1574,"Aug 23, 2025",18,249380
 Nuitee,"May 3, 2025",17,681108
 DELHTL1574,"May 6, 2025",17,374990
 Ratehawk India,"May 7, 2025",17,592821
@@ -619,6 +630,7 @@ Nuitee,"Aug 16, 2025",16,352729
 Hotelbeds API,"Aug 22, 2025",16,488940
 DELHTL1574,"Aug 22, 2025",16,295566
 Dida,"Aug 22, 2025",16,354670
+Ottila,"Aug 24, 2025",16,285446
 ClearTrip API,"May 4, 2025",15,106007
 Nuitee,"May 4, 2025",15,415863
 ClearTrip API,"May 6, 2025",15,185499
@@ -684,7 +696,6 @@ AGODADOM,"Aug 18, 2025",15,269484
 Dida,"Aug 20, 2025",15,224125
 ElevateDMC,"Aug 21, 2025",15,598084
 Smyrooms,"Aug 21, 2025",15,368082
-Expedia,"Aug 23, 2025",15,175327
 Dida,"May 5, 2025",14,266209
 Webbeds,"May 8, 2025",14,796787
 ClearTrip API,"May 10, 2025",14,88764
@@ -822,6 +833,8 @@ AGODADOM,"Aug 20, 2025",13,157282
 travelguru,"Aug 21, 2025",13,125648
 Hotelbeds API,"Aug 21, 2025",13,611415
 Tripjack,"Aug 22, 2025",13,373486
+MgBedBankUSD,"Aug 23, 2025",13,377546
+grn,"Aug 23, 2025",13,202867
 Dida,"May 1, 2025",12,223664
 Veturis,"May 3, 2025",12,372591
 Nuitee,"May 7, 2025",12,345776
@@ -981,6 +994,9 @@ Travelbullz,"Aug 19, 2025",11,196543
 Ratehawk,"Aug 20, 2025",11,343636
 Agoda,"Aug 21, 2025",11,558130
 AGODADOM,"Aug 21, 2025",11,92086
+Hotelbeds API,"Aug 23, 2025",11,447862
+grn,"Aug 24, 2025",11,281365
+Webbeds,"Aug 24, 2025",11,155663
 Veturis,"May 1, 2025",10,354296
 Hotelbeds API,"May 1, 2025",10,270480
 DELHTL1574,"May 2, 2025",10,270903
@@ -1091,6 +1107,8 @@ travelguru,"Aug 19, 2025",10,116806
 MgBedBankUSD,"Aug 20, 2025",10,264113
 Hotelbeds API,"Aug 20, 2025",10,507106
 EscalaBeds,"Aug 22, 2025",10,335861
+Nuitee,"Aug 23, 2025",10,508657
+Travelbullz,"Aug 23, 2025",10,264304
 grn,"May 2, 2025",9,190843
 travelguru,"May 2, 2025",9,74667
 Smyrooms,"May 2, 2025",9,607122
@@ -1214,8 +1232,7 @@ Tripjack,"Aug 21, 2025",9,397108
 Veturis,"Aug 21, 2025",9,324086
 Restel,"Aug 22, 2025",9,338182
 MgBedBankUSD,"Aug 22, 2025",9,300623
-Ottila,"Aug 23, 2025",9,863487
-Webbeds,"Aug 23, 2025",9,335024
+Hotelbeds API,"Aug 24, 2025",9,468871
 Hotelbeds API,"May 2, 2025",8,352828
 Smyrooms,"May 3, 2025",8,255782
 Ratehawk India,"May 4, 2025",8,244694
@@ -1350,8 +1367,8 @@ Travelbullz,"Aug 21, 2025",8,375593
 Yalago,"Aug 21, 2025",8,585669
 Smyrooms,"Aug 22, 2025",8,300924
 Ratehawk,"Aug 22, 2025",8,275206
-DELHTL1574,"Aug 23, 2025",8,126635
-Tourmind,"Aug 23, 2025",8,208146
+Rezlive,"Aug 23, 2025",8,248020
+travelguru,"Aug 24, 2025",8,211714
 Restel,"May 1, 2025",7,252229
 Agoda,"May 1, 2025",7,281857
 Agoda,"May 2, 2025",7,513374
@@ -1507,6 +1524,10 @@ Ratehawk,"Aug 21, 2025",7,91194
 EscalaBeds,"Aug 21, 2025",7,586458
 G2,"Aug 22, 2025",7,194747
 Peakpoint,"Aug 22, 2025",7,222035
+Akbar,"Aug 23, 2025",7,62603
+travelguru,"Aug 23, 2025",7,41504
+Nuitee,"Aug 24, 2025",7,162246
+DELHTL1574,"Aug 24, 2025",7,123018
 DELHTL1574,"May 1, 2025",6,245037
 travelguru,"May 1, 2025",6,28777
 Travelbullz,"May 2, 2025",6,285355
@@ -1695,6 +1716,9 @@ Tripmax,"Aug 21, 2025",6,110401
 Within Earth,"Aug 21, 2025",6,116986
 ElevateDMC,"Aug 22, 2025",6,267321
 Traveloka,"Aug 22, 2025",6,40295
+Tripjack,"Aug 23, 2025",6,161181
+EscalaBeds,"Aug 23, 2025",6,90897
+Akbar,"Aug 24, 2025",6,47236
 Rakuten,"May 1, 2025",5,31804
 Restel,"May 2, 2025",5,58454
 MikiTravels,"May 2, 2025",5,134508
@@ -1900,11 +1924,12 @@ World 2 Meet,"Aug 21, 2025",5,82805
 Travelbullz,"Aug 22, 2025",5,123096
 Ratehawk India,"Aug 22, 2025",5,278329
 Akbar,"Aug 22, 2025",5,101300
-Hotelbeds API,"Aug 23, 2025",5,186072
-ClearTrip API,"Aug 23, 2025",5,64767
-Dida,"Aug 23, 2025",5,95510
-Travelbullz,"Aug 23, 2025",5,146895
-travelguru,"Aug 23, 2025",5,34388
+Veturis,"Aug 23, 2025",5,285957
+Within Earth,"Aug 23, 2025",5,128445
+Smyrooms,"Aug 23, 2025",5,380625
+iOL,"Aug 23, 2025",5,152070
+Dida,"Aug 24, 2025",5,67515
+Smyrooms,"Aug 24, 2025",5,89091
 Yalago,"May 1, 2025",4,249130
 Rezlive,"May 1, 2025",4,31236
 Travelbullz,"May 1, 2025",4,65185
@@ -2154,8 +2179,10 @@ G2,"Aug 20, 2025",4,189155
 MikiTravels,"Aug 21, 2025",4,221205
 Bonotel,"Aug 22, 2025",4,165881
 Within Earth,"Aug 22, 2025",4,267842
-MgBedBankUSD,"Aug 23, 2025",4,46393
-grn,"Aug 23, 2025",4,107586
+Restel,"Aug 23, 2025",4,56288
+Traveloka,"Aug 23, 2025",4,26470
+G2,"Aug 23, 2025",4,163435
+ElevateDMC,"Aug 24, 2025",4,234875
 grn,"May 1, 2025",3,97789
 Itrip,"May 1, 2025",3,51813
 Smyrooms,"May 1, 2025",3,50098
@@ -2458,8 +2485,9 @@ Go Global,"Aug 22, 2025",3,238929
 iOL,"Aug 22, 2025",3,125790
 Yalago,"Aug 22, 2025",3,167526
 Rezlive,"Aug 22, 2025",3,142903
-Nuitee,"Aug 23, 2025",3,50442
-ElevateDMC,"Aug 23, 2025",3,309707
+Go Global,"Aug 23, 2025",3,139112
+Travellanda,"Aug 23, 2025",3,267771
+Veturis,"Aug 24, 2025",3,41949
 Bonotel,"May 1, 2025",2,178358
 G2,"May 1, 2025",2,20589
 TravcoUSD,"May 2, 2025",2,53242
@@ -2929,10 +2957,21 @@ MikiTravels,"Aug 22, 2025",2,104338
 Travellanda,"Aug 22, 2025",2,169082
 Veturis,"Aug 22, 2025",2,65753
 World 2 Meet,"Aug 22, 2025",2,40745
-Veturis,"Aug 23, 2025",2,157397
-Tripjack,"Aug 23, 2025",2,42633
-Restel,"Aug 23, 2025",2,23208
-iOL,"Aug 23, 2025",2,41424
+TravClan Hotels Magnum,"Aug 23, 2025",2,30621
+World 2 Meet,"Aug 23, 2025",2,141567
+Hyperguest,"Aug 23, 2025",2,139178
+Peakpoint,"Aug 23, 2025",2,84027
+AsianTrails,"Aug 23, 2025",2,48840
+MikiTravels,"Aug 23, 2025",2,100523
+Rakuten,"Aug 23, 2025",2,62774
+Tripmax,"Aug 23, 2025",2,24229
+Itrip,"Aug 24, 2025",2,65668
+Within Earth,"Aug 24, 2025",2,30895
+Bonotel,"Aug 24, 2025",2,23016
+Travelbullz,"Aug 24, 2025",2,17233
+Travellanda,"Aug 24, 2025",2,104974
+Yalago,"Aug 24, 2025",2,112954
+MgBedBankUSD,"Aug 24, 2025",2,22333
 Travellanda,"May 1, 2025",1,17479
 Hotel Trader,"May 1, 2025",1,38470
 Ratehawk,"May 1, 2025",1,445572
@@ -3716,19 +3755,19 @@ Itrip,"Aug 22, 2025",1,15938
 Travclan Supply,"Aug 22, 2025",1,6937
 Roibos,"Aug 22, 2025",1,23507
 AsianTrails,"Aug 22, 2025",1,10196
-EscalaBeds,"Aug 23, 2025",1,19891
-Akbar,"Aug 23, 2025",1,6763
 EMTDirect,"Aug 23, 2025",1,64100
-Within Earth,"Aug 23, 2025",1,5970
-TravClan Hotels Magnum,"Aug 23, 2025",1,15100
-Smyrooms,"Aug 23, 2025",1,55334
-World 2 Meet,"Aug 23, 2025",1,58223
-Hyperguest,"Aug 23, 2025",1,32402
-Traveloka,"Aug 23, 2025",1,5516
-Peakpoint,"Aug 23, 2025",1,64870
-Go Global,"Aug 23, 2025",1,9362
 Ratehawk India,"Aug 23, 2025",1,27415
-AsianTrails,"Aug 23, 2025",1,26738
 Travclan Supply,"Aug 23, 2025",1,15706
-Rezlive,"Aug 23, 2025",1,8869
-Travellanda,"Aug 23, 2025",1,154094
+FastpayUSD,"Aug 23, 2025",1,90906
+Bonotel,"Aug 23, 2025",1,181926
+Yalago,"Aug 23, 2025",1,8426
+Travclan Supply,"Aug 24, 2025",1,15222
+Go Global,"Aug 24, 2025",1,23936
+Ratehawk India,"Aug 24, 2025",1,1572
+Tripjack,"Aug 24, 2025",1,4853
+Ratehawk,"Aug 24, 2025",1,11037
+Restel,"Aug 24, 2025",1,26537
+G2,"Aug 24, 2025",1,7917
+Rezlive,"Aug 24, 2025",1,12436
+iOL,"Aug 24, 2025",1,18578
+Rakuten,"Aug 24, 2025",1,95466
