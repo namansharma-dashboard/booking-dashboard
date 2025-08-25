@@ -378,30 +378,64 @@
             transform: translateY(0) scale(0.98);
         }
 
-        /* Add icons to tabs */
-        .nav-tab[data-tab="overview"]::before {
+        /* Add icons to tabs with enhanced styling */
+        .nav-tab[data-tab="overview"]::after {
             content: '📊';
-            margin-right: 0.5rem;
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            font-size: 1.2rem;
+            animation: float 3s ease-in-out infinite;
         }
 
-        .nav-tab[data-tab="suppliers"]::before {
+        .nav-tab[data-tab="yesterday"]::after {
+            content: '📅';
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            font-size: 1.2rem;
+            animation: float 3s ease-in-out infinite 0.5s;
+        }
+
+        .nav-tab[data-tab="suppliers"]::after {
             content: '🎯';
-            margin-right: 0.5rem;
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            font-size: 1.2rem;
+            animation: float 3s ease-in-out infinite 1s;
         }
 
-        .nav-tab[data-tab="trends"]::before {
+        .nav-tab[data-tab="trends"]::after {
             content: '📈';
-            margin-right: 0.5rem;
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            font-size: 1.2rem;
+            animation: float 3s ease-in-out infinite 1.5s;
         }
 
-        .nav-tab[data-tab="predictions"]::before {
+        .nav-tab[data-tab="predictions"]::after {
             content: '🔮';
-            margin-right: 0.5rem;
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            font-size: 1.2rem;
+            animation: float 3s ease-in-out infinite 2s;
         }
 
-        .nav-tab[data-tab="optimization"]::before {
+        .nav-tab[data-tab="optimization"]::after {
             content: '⚡';
-            margin-right: 0.5rem;
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            font-size: 1.2rem;
+            animation: float 3s ease-in-out infinite 2.5s;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-5px) rotate(5deg); }
         }
 
         .tab-content {
@@ -653,10 +687,195 @@
             margin: 1rem 0;
         }
 
-        @media (max-width: 1024px) {
-            .insights-section {
-                grid-template-columns: 1fr;
-            }
+        /* Security & Login Styles */
+        .login-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .login-container {
+            background: white;
+            padding: 3rem;
+            border-radius: 2rem;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            text-align: center;
+            max-width: 400px;
+            width: 90%;
+        }
+
+        .login-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: #1e293b;
+            margin-bottom: 0.5rem;
+        }
+
+        .login-subtitle {
+            color: #64748b;
+            margin-bottom: 2rem;
+        }
+
+        .login-input {
+            width: 100%;
+            padding: 1rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 0.75rem;
+            font-size: 1rem;
+            margin-bottom: 1rem;
+            transition: all 0.2s;
+        }
+
+        .login-input:focus {
+            outline: none;
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .login-btn {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            color: white;
+            border: none;
+            border-radius: 0.75rem;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .login-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(59, 130, 246, 0.4);
+        }
+
+        .error-login {
+            background: #fef2f2;
+            color: #dc2626;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            margin-bottom: 1rem;
+            font-size: 0.875rem;
+        }
+
+        /* Advanced Date Filter Styles */
+        .advanced-filters {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            border-radius: 1rem;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border: 2px solid rgba(59, 130, 246, 0.1);
+        }
+
+        .date-picker-section {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .date-picker-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .date-input {
+            padding: 0.75rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 0.75rem;
+            font-size: 0.875rem;
+            transition: all 0.2s;
+        }
+
+        .date-input:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+
+        .quick-filters {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            margin-top: 1rem;
+        }
+
+        .quick-filter-btn {
+            padding: 0.5rem 1rem;
+            background: white;
+            border: 2px solid #e2e8f0;
+            border-radius: 0.75rem;
+            font-size: 0.875rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: 500;
+        }
+
+        .quick-filter-btn:hover, .quick-filter-btn.active {
+            border-color: #3b82f6;
+            background: #3b82f6;
+            color: white;
+            transform: translateY(-1px);
+        }
+
+        /* Yesterday Analysis Styles */
+        .yesterday-section {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 2rem;
+            margin-bottom: 2rem;
+        }
+
+        .yesterday-metrics {
+            background: white;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            border-left: 4px solid #8b5cf6;
+        }
+
+        .yesterday-alerts {
+            background: white;
+            border-radius: 1rem;
+            padding: 1.5rem;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .alert-item {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            border-radius: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .alert-item.surge {
+            background: #f0fdf4;
+            border-left: 3px solid #10b981;
+        }
+
+        .alert-item.dip {
+            background: #fef2f2;
+            border-left: 3px solid #ef4444;
+        }
+
+        .alert-item.unusual {
+            background: #fef3c7;
+            border-left: 3px solid #f59e0b;
+        }
+
+        .alert-icon {
+            font-size: 1.2rem;
         }
 
         @media (max-width: 768px) {
@@ -771,11 +990,44 @@
 
             <nav class="nav-tabs">
                 <button class="nav-tab active" data-tab="overview" onclick="switchTab('overview')">Business Overview</button>
+                <button class="nav-tab" data-tab="yesterday" onclick="switchTab('yesterday')">Yesterday's Report</button>
                 <button class="nav-tab" data-tab="suppliers" onclick="switchTab('suppliers')">Smart Supplier Analysis</button>
                 <button class="nav-tab" data-tab="trends" onclick="switchTab('trends')">Trend Intelligence</button>
                 <button class="nav-tab" data-tab="predictions" onclick="switchTab('predictions')">AI Predictions</button>
                 <button class="nav-tab" data-tab="optimization" onclick="switchTab('optimization')">Optimization Hub</button>
             </nav>
+
+            <!-- Advanced Date Filters -->
+            <div class="advanced-filters">
+                <h3 style="margin-bottom: 1rem; color: #1e293b; font-weight: 600;">📅 Smart Date Controls</h3>
+                <div class="date-picker-section">
+                    <div class="date-picker-group">
+                        <label class="filter-label">From Date</label>
+                        <input type="date" class="date-input" id="startDate" onchange="applyDateFilter()">
+                    </div>
+                    <div class="date-picker-group">
+                        <label class="filter-label">To Date</label>
+                        <input type="date" class="date-input" id="endDate" onchange="applyDateFilter()">
+                    </div>
+                    <div class="date-picker-group">
+                        <label class="filter-label">Apply To</label>
+                        <select class="filter-select" id="chartTarget">
+                            <option value="all">All Charts</option>
+                            <option value="overview">Overview Only</option>
+                            <option value="trends">Trends Only</option>
+                            <option value="predictions">Predictions Only</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="quick-filters">
+                    <button class="quick-filter-btn" onclick="setQuickDate('today')">Today</button>
+                    <button class="quick-filter-btn active" onclick="setQuickDate('yesterday')">Yesterday</button>
+                    <button class="quick-filter-btn" onclick="setQuickDate('week')">Last 7 Days</button>
+                    <button class="quick-filter-btn" onclick="setQuickDate('month')">Last 30 Days</button>
+                    <button class="quick-filter-btn" onclick="setQuickDate('quarter')">Last 90 Days</button>
+                    <button class="quick-filter-btn" onclick="setQuickDate('all')">All Time</button>
+                </div>
+            </div>
 
             <!-- Business Overview Tab -->
             <div id="overview" class="tab-content active">
@@ -896,6 +1148,21 @@
     </div>
 
     <script>
+    <script>
+        // Security Configuration
+        const DASHBOARD_CONFIG = {
+            requireAuth: true, // Set to false to disable login
+            organizationName: "Your Hotel Business",
+            authorizedUsers: [
+                { email: "admin@yourhotel.com", password: "dashboard2025!", role: "admin" },
+                { email: "manager@yourhotel.com", password: "manager123!", role: "manager" },
+                { email: "analyst@yourhotel.com", password: "analyst123!", role: "analyst" }
+            ],
+            sessionTimeout: 8 * 60 * 60 * 1000 // 8 hours
+        };
+
+        let isAuthenticated = false;
+        let currentUser = null;
         let rawBookingData = [];
         let processedData = {};
         let filteredData = {};
@@ -903,7 +1170,526 @@
         let currentChartType = 'line';
         let currentFilter = 'all';
         let currentMetric = 'bookings';
+        let currentPredictionType = '7days';
+        let currentOptimizationType = 'performance';
+        let currentDateFilter = { start: null, end: null };
         let aiInsights = {};
+
+        // Security Functions
+        function showLoginScreen() {
+            if (!DASHBOARD_CONFIG.requireAuth) {
+                initializeDashboard();
+                return;
+            }
+
+            const loginOverlay = document.createElement('div');
+            loginOverlay.className = 'login-overlay';
+            loginOverlay.innerHTML = `
+                <div class="login-container">
+                    <h2 class="login-title">🔒 Secure Access Required</h2>
+                    <p class="login-subtitle">This dashboard contains sensitive business data for ${DASHBOARD_CONFIG.organizationName}</p>
+                    <div id="login-error" style="display: none;"></div>
+                    <input type="email" class="login-input" id="emailInput" placeholder="Enter your email" required>
+                    <input type="password" class="login-input" id="passwordInput" placeholder="Enter your password" required>
+                    <button class="login-btn" onclick="attemptLogin()">🚀 Access Dashboard</button>
+                    <p style="font-size: 0.75rem; color: #64748b; margin-top: 1rem;">
+                        Contact administrator for access approval
+                    </p>
+                </div>
+            `;
+            document.body.appendChild(loginOverlay);
+
+            // Add enter key support
+            document.getElementById('passwordInput').addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') attemptLogin();
+            });
+        }
+
+        function attemptLogin() {
+            const email = document.getElementById('emailInput').value;
+            const password = document.getElementById('passwordInput').value;
+            const errorDiv = document.getElementById('login-error');
+
+            const user = DASHBOARD_CONFIG.authorizedUsers.find(u => u.email === email && u.password === password);
+            
+            if (user) {
+                isAuthenticated = true;
+                currentUser = user;
+                
+                // Store session with expiration
+                const session = {
+                    user: user,
+                    loginTime: Date.now(),
+                    expires: Date.now() + DASHBOARD_CONFIG.sessionTimeout
+                };
+                sessionStorage.setItem('dashboardSession', JSON.stringify(session));
+                
+                // Remove login overlay
+                document.querySelector('.login-overlay').remove();
+                initializeDashboard();
+                
+                showSuccess(`Welcome back, ${user.email}! You have ${user.role} access.`);
+            } else {
+                errorDiv.className = 'error-login';
+                errorDiv.textContent = '❌ Invalid credentials. Contact administrator for access.';
+                errorDiv.style.display = 'block';
+                
+                // Clear password field
+                document.getElementById('passwordInput').value = '';
+            }
+        }
+
+        function checkSession() {
+            if (!DASHBOARD_CONFIG.requireAuth) return true;
+
+            const sessionData = sessionStorage.getItem('dashboardSession');
+            if (!sessionData) return false;
+
+            try {
+                const session = JSON.parse(sessionData);
+                if (Date.now() > session.expires) {
+                    sessionStorage.removeItem('dashboardSession');
+                    return false;
+                }
+                
+                isAuthenticated = true;
+                currentUser = session.user;
+                return true;
+            } catch (error) {
+                sessionStorage.removeItem('dashboardSession');
+                return false;
+            }
+        }
+
+        function logout() {
+            sessionStorage.removeItem('dashboardSession');
+            location.reload();
+        }
+
+        // Advanced Date Filtering Functions
+        function setQuickDate(period) {
+            const today = new Date();
+            const yesterday = new Date(today);
+            yesterday.setDate(today.getDate() - 1);
+            
+            let startDate, endDate;
+            
+            switch (period) {
+                case 'today':
+                    startDate = endDate = today;
+                    break;
+                case 'yesterday':
+                    startDate = endDate = yesterday;
+                    break;
+                case 'week':
+                    startDate = new Date(today);
+                    startDate.setDate(today.getDate() - 7);
+                    endDate = today;
+                    break;
+                case 'month':
+                    startDate = new Date(today);
+                    startDate.setDate(today.getDate() - 30);
+                    endDate = today;
+                    break;
+                case 'quarter':
+                    startDate = new Date(today);
+                    startDate.setDate(today.getDate() - 90);
+                    endDate = today;
+                    break;
+                case 'all':
+                    startDate = endDate = null;
+                    break;
+            }
+
+            // Update date inputs
+            if (startDate) {
+                document.getElementById('startDate').value = startDate.toISOString().split('T')[0];
+            } else {
+                document.getElementById('startDate').value = '';
+            }
+            
+            if (endDate) {
+                document.getElementById('endDate').value = endDate.toISOString().split('T')[0];
+            } else {
+                document.getElementById('endDate').value = '';
+            }
+
+            // Update button states
+            document.querySelectorAll('.quick-filter-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+
+            applyDateFilter();
+        }
+
+        function applyDateFilter() {
+            const startDate = document.getElementById('startDate').value;
+            const endDate = document.getElementById('endDate').value;
+            const target = document.getElementById('chartTarget').value;
+
+            currentDateFilter = {
+                start: startDate ? new Date(startDate) : null,
+                end: endDate ? new Date(endDate) : null,
+                target: target
+            };
+
+            // Apply to specified charts
+            if (target === 'all' || target === 'overview') {
+                applyFilters();
+            }
+            
+            updateChartsWithDateFilter();
+        }
+
+        function updateChartsWithDateFilter() {
+            const target = currentDateFilter.target;
+            
+            if (target === 'all') {
+                createCharts();
+            } else if (target === 'overview') {
+                createOverviewChart();
+            } else if (target === 'trends') {
+                createTrendsChart();
+            } else if (target === 'predictions') {
+                createPredictionsChart();
+            }
+        }
+
+        // Yesterday Analysis Functions
+        function analyzeYesterday() {
+            if (!processedData.dailyTotals) return;
+
+            const today = new Date();
+            const yesterday = new Date(today);
+            yesterday.setDate(today.getDate() - 1);
+            const lastWeek = new Date(today);
+            lastWeek.setDate(today.getDate() - 8); // Same day last week
+
+            const yesterdayStr = yesterday.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+            const lastWeekStr = lastWeek.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+            // Find yesterday's data
+            const yesterdayData = processedData.dailyTotals[yesterdayStr] || { bookings: 0, gmv: 0 };
+            const lastWeekData = processedData.dailyTotals[lastWeekStr] || { bookings: 0, gmv: 0 };
+
+            // Calculate changes
+            const bookingsChange = lastWeekData.bookings > 0 ? 
+                ((yesterdayData.bookings - lastWeekData.bookings) / lastWeekData.bookings * 100) : 0;
+            const gmvChange = lastWeekData.gmv > 0 ? 
+                ((yesterdayData.gmv - lastWeekData.gmv) / lastWeekData.gmv * 100) : 0;
+
+            // Update yesterday metrics
+            document.getElementById('yesterday-bookings').textContent = yesterdayData.bookings.toLocaleString();
+            document.getElementById('yesterday-gmv').textContent = '₹' + (yesterdayData.gmv / 10000000).toFixed(2) + 'Cr';
+            
+            const avgValue = yesterdayData.bookings > 0 ? yesterdayData.gmv / yesterdayData.bookings : 0;
+            document.getElementById('yesterday-avg-value').textContent = '₹' + Math.round(avgValue/1000) + 'k';
+
+            // Count active suppliers yesterday
+            const activeYesterday = processedData.suppliers.filter(supplier => 
+                processedData.supplierData[supplier][yesterdayStr]?.bookings > 0
+            ).length;
+            document.getElementById('yesterday-suppliers').textContent = activeYesterday;
+
+            // Update change indicators
+            document.getElementById('yesterday-bookings-change').textContent = 
+                `${bookingsChange >= 0 ? '↗' : '↘'} ${Math.abs(bookingsChange).toFixed(1)}% vs last week`;
+            document.getElementById('yesterday-bookings-change').className = 
+                `metric-change ${bookingsChange >= 0 ? 'positive' : 'negative'}`;
+
+            document.getElementById('yesterday-gmv-change').textContent = 
+                `${gmvChange >= 0 ? '↗' : '↘'} ${Math.abs(gmvChange).toFixed(1)}% vs last week`;
+
+            // Generate AI alerts for yesterday
+            generateYesterdayAlerts(yesterdayStr, lastWeekStr);
+            createYesterdayChart();
+        }
+
+        function generateYesterdayAlerts(yesterdayStr, lastWeekStr) {
+            const container = document.getElementById('yesterday-alerts-container');
+            container.innerHTML = '';
+
+            const alerts = [];
+
+            // Analyze each supplier's yesterday performance
+            processedData.suppliers.forEach(supplier => {
+                const yesterday = processedData.supplierData[supplier][yesterdayStr] || { bookings: 0, gmv: 0 };
+                const lastWeek = processedData.supplierData[supplier][lastWeekStr] || { bookings: 0, gmv: 0 };
+
+                if (yesterday.bookings === 0 && lastWeek.bookings > 10) {
+                    alerts.push({
+                        type: 'dip',
+                        icon: '🔴',
+                        message: `${supplier} had ZERO bookings yesterday (vs ${lastWeek.bookings} last week)`
+                    });
+                } else if (yesterday.bookings > 0 && lastWeek.bookings > 0) {
+                    const change = ((yesterday.bookings - lastWeek.bookings) / lastWeek.bookings) * 100;
+                    
+                    if (change > 50) {
+                        alerts.push({
+                            type: 'surge',
+                            icon: '🟢',
+                            message: `${supplier} surged +${change.toFixed(1)}% (${yesterday.bookings} vs ${lastWeek.bookings})`
+                        });
+                    } else if (change < -30) {
+                        alerts.push({
+                            type: 'dip',
+                            icon: '🔴',
+                            message: `${supplier} dropped ${change.toFixed(1)}% (${yesterday.bookings} vs ${lastWeek.bookings})`
+                        });
+                    }
+                }
+
+                // Check for unusual booking values
+                if (yesterday.bookings > 0) {
+                    const avgValue = yesterday.gmv / yesterday.bookings;
+                    const lastWeekAvg = lastWeek.bookings > 0 ? lastWeek.gmv / lastWeek.bookings : 0;
+                    
+                    if (lastWeekAvg > 0) {
+                        const valueChange = ((avgValue - lastWeekAvg) / lastWeekAvg) * 100;
+                        if (Math.abs(valueChange) > 25) {
+                            alerts.push({
+                                type: 'unusual',
+                                icon: '🟡',
+                                message: `${supplier} booking value ${valueChange > 0 ? 'increased' : 'decreased'} by ${Math.abs(valueChange).toFixed(1)}%`
+                            });
+                        }
+                    }
+                }
+            });
+
+            // Sort alerts by importance
+            alerts.sort((a, b) => {
+                const priority = { dip: 3, surge: 2, unusual: 1 };
+                return priority[b.type] - priority[a.type];
+            });
+
+            // Display top 8 alerts
+            alerts.slice(0, 8).forEach(alert => {
+                const alertDiv = document.createElement('div');
+                alertDiv.className = `alert-item ${alert.type}`;
+                alertDiv.innerHTML = `
+                    <span class="alert-icon">${alert.icon}</span>
+                    <span class="alert-text">${alert.message}</span>
+                `;
+                container.appendChild(alertDiv);
+            });
+
+            if (alerts.length === 0) {
+                container.innerHTML = `
+                    <div class="alert-item" style="background: #f0fdf4; border-left: 3px solid #10b981;">
+                        <span class="alert-icon">✅</span>
+                        <span class="alert-text">No significant alerts for yesterday. All suppliers performing normally!</span>
+                    </div>
+                `;
+            }
+        }
+
+        let currentYesterdayView = 'rankings';
+
+        function createYesterdayChart() {
+            const ctx = document.getElementById('yesterdayChart').getContext('2d');
+            
+            if (charts.yesterday) {
+                charts.yesterday.destroy();
+            }
+
+            switch (currentYesterdayView) {
+                case 'rankings':
+                    createYesterdayRankings(ctx);
+                    break;
+                case 'comparison':
+                    createYesterdayComparison(ctx);
+                    break;
+                case 'hourly':
+                    createYesterdayHourlyPattern(ctx);
+                    break;
+            }
+        }
+
+        function createYesterdayRankings(ctx) {
+            const today = new Date();
+            const yesterday = new Date(today);
+            yesterday.setDate(today.getDate() - 1);
+            const yesterdayStr = yesterday.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+            const supplierPerformance = processedData.suppliers
+                .map(supplier => ({
+                    name: supplier,
+                    bookings: processedData.supplierData[supplier][yesterdayStr]?.bookings || 0,
+                    gmv: processedData.supplierData[supplier][yesterdayStr]?.gmv || 0
+                }))
+                .filter(s => s.bookings > 0)
+                .sort((a, b) => b.bookings - a.bookings)
+                .slice(0, 15);
+
+            charts.yesterday = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: supplierPerformance.map(s => s.name),
+                    datasets: [{
+                        label: 'Yesterday\'s Bookings',
+                        data: supplierPerformance.map(s => s.bookings),
+                        backgroundColor: supplierPerformance.map((s, i) => {
+                            if (i < 3) return '#10b981'; // Top 3
+                            if (i < 8) return '#3b82f6'; // Top 8
+                            return '#f59e0b'; // Others
+                        }),
+                        borderColor: '#ffffff',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        title: {
+                            display: true,
+                            text: `Yesterday's Top Performers - ${yesterdayStr}`
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: '#f1f5f9' }
+                        },
+                        x: {
+                            grid: { color: '#f1f5f9' },
+                            ticks: { maxRotation: 45 }
+                        }
+                    }
+                }
+            });
+        }
+
+        function createYesterdayComparison(ctx) {
+            const today = new Date();
+            const yesterday = new Date(today);
+            yesterday.setDate(today.getDate() - 1);
+            const lastWeek = new Date(today);
+            lastWeek.setDate(today.getDate() - 8);
+
+            const yesterdayStr = yesterday.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+            const lastWeekStr = lastWeek.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
+
+            const comparison = processedData.suppliers
+                .map(supplier => {
+                    const yesterdayBookings = processedData.supplierData[supplier][yesterdayStr]?.bookings || 0;
+                    const lastWeekBookings = processedData.supplierData[supplier][lastWeekStr]?.bookings || 0;
+                    return {
+                        name: supplier,
+                        yesterday: yesterdayBookings,
+                        lastWeek: lastWeekBookings,
+                        change: lastWeekBookings > 0 ? ((yesterdayBookings - lastWeekBookings) / lastWeekBookings * 100) : 0
+                    };
+                })
+                .filter(s => s.yesterday > 0 || s.lastWeek > 0)
+                .sort((a, b) => Math.abs(b.change) - Math.abs(a.change))
+                .slice(0, 12);
+
+            charts.yesterday = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: comparison.map(s => s.name),
+                    datasets: [
+                        {
+                            label: 'Yesterday',
+                            data: comparison.map(s => s.yesterday),
+                            backgroundColor: '#3b82f6',
+                            borderColor: '#2563eb',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Same Day Last Week',
+                            data: comparison.map(s => s.lastWeek),
+                            backgroundColor: '#94a3b8',
+                            borderColor: '#64748b',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Yesterday vs Same Day Last Week Comparison'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: '#f1f5f9' }
+                        },
+                        x: {
+                            grid: { color: '#f1f5f9' },
+                            ticks: { maxRotation: 45 }
+                        }
+                    }
+                }
+            });
+        }
+
+        function createYesterdayHourlyPattern(ctx) {
+            // Simulate hourly distribution (since we don't have hourly data)
+            const hourlyPattern = Array.from({length: 24}, (_, hour) => {
+                // Business hours pattern simulation
+                let factor = 0.1; // Base activity
+                if (hour >= 9 && hour <= 11) factor = 0.8; // Morning peak
+                if (hour >= 14 && hour <= 16) factor = 1.0; // Afternoon peak  
+                if (hour >= 18 && hour <= 20) factor = 0.6; // Evening activity
+                if (hour >= 22 || hour <= 6) factor = 0.05; // Night low activity
+                
+                return Math.floor(Math.random() * 50 * factor + factor * 20);
+            });
+
+            charts.yesterday = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: Array.from({length: 24}, (_, i) => `${i}:00`),
+                    datasets: [{
+                        label: 'Estimated Hourly Bookings',
+                        data: hourlyPattern,
+                        borderColor: '#8b5cf6',
+                        backgroundColor: 'rgba(139, 92, 246, 0.1)',
+                        borderWidth: 3,
+                        fill: true,
+                        tension: 0.4
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        title: {
+                            display: true,
+                            text: 'Yesterday\'s Estimated Hourly Booking Pattern'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            grid: { color: '#f1f5f9' }
+                        },
+                        x: {
+                            grid: { color: '#f1f5f9' }
+                        }
+                    }
+                }
+            });
+        }
+
+        function toggleYesterdayView(view) {
+            currentYesterdayView = view;
+            
+            document.querySelectorAll('#yesterday .chart-controls .chart-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            createYesterdayChart();
+        }
 
         // Load and initialize
         async function loadBookingData() {
@@ -1313,6 +2099,7 @@
             createTrendsChart();
             createPredictionsChart();
             createOptimizationChart();
+            analyzeYesterday(); // Add yesterday analysis
         }
 
         function createOverviewChart() {
@@ -2390,21 +3177,45 @@
             }, 3000);
         }
 
-        // Initialize dashboard with welcome animation
-        document.addEventListener('DOMContentLoaded', function() {
+        // Initialize dashboard with security check
+        function initializeDashboard() {
             console.log('AI-Enhanced Dashboard initializing...');
             
-            // Show welcome animation for new users (or randomly for fun)
-            const isFirstTime = !localStorage.getItem('dashboardVisited');
-            if (isFirstTime || Math.random() < 0.1) { // First time or 10% chance
+            // Add logout button for authenticated users
+            if (isAuthenticated && currentUser) {
+                const logoutBtn = document.createElement('button');
+                logoutBtn.innerHTML = `👋 Logout (${currentUser.role})`;
+                logoutBtn.style.cssText = `
+                    position: fixed;
+                    top: 1rem;
+                    right: 1rem;
+                    background: rgba(239, 68, 68, 0.9);
+                    color: white;
+                    border: none;
+                    padding: 0.5rem 1rem;
+                    border-radius: 0.5rem;
+                    cursor: pointer;
+                    font-size: 0.875rem;
+                    z-index: 1000;
+                    transition: all 0.2s;
+                `;
+                logoutBtn.onmouseover = () => logoutBtn.style.background = '#dc2626';
+                logoutBtn.onmouseout = () => logoutBtn.style.background = 'rgba(239, 68, 68, 0.9)';
+                logoutBtn.onclick = logout;
+                document.body.appendChild(logoutBtn);
+            }
+
+            // Show welcome animation for new users
+            const isFirstTime = !sessionStorage.getItem('dashboardVisited');
+            if (isFirstTime || Math.random() < 0.1) {
                 setTimeout(showWelcomeAnimation, 1500);
-                localStorage.setItem('dashboardVisited', 'true');
+                sessionStorage.setItem('dashboardVisited', 'true');
             }
             
             // Add notification badges to tabs for new users
             if (isFirstTime) {
                 setTimeout(() => {
-                    const tabs = ['suppliers', 'trends', 'predictions', 'optimization'];
+                    const tabs = ['yesterday', 'suppliers', 'trends', 'predictions', 'optimization'];
                     tabs.forEach((tab, index) => {
                         setTimeout(() => {
                             const tabElement = document.querySelector(`[data-tab="${tab}"]`);
@@ -2416,7 +3227,6 @@
                                 tabElement.style.position = 'relative';
                                 tabElement.appendChild(indicator);
                                 
-                                // Remove indicator after 30 seconds
                                 setTimeout(() => {
                                     indicator.style.opacity = '0';
                                     setTimeout(() => indicator.remove(), 300);
@@ -2428,6 +3238,15 @@
             }
             
             loadBookingData();
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            // Check authentication first
+            if (checkSession()) {
+                initializeDashboard();
+            } else {
+                showLoginScreen();
+            }
         });
     </script>
 </body>
