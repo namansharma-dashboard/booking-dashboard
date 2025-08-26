@@ -871,7 +871,7 @@
         // SECURITY CONFIGURATION
         const DASHBOARD_CONFIG = {
             requireAuth: true,
-            password: "TravClan@1234", // Change this to your desired password
+            password: "analytics2025!", // Change this to your desired password
             sessionTimeout: 8 * 60 * 60 * 1000 // 8 hours
         };
 
@@ -1079,7 +1079,7 @@
                         generateRealAIInsights();
                         applySmartFilters();
                         hideLoading();
-                        showSuccess(`🤖 Smart analysis complete! Processed ${rawBookingData.length} rows from ${usedFile}`);
+                        showSuccess(`Smart analysis complete! Processed ${rawBookingData.length} rows from ${usedFile}`);
                     },
                     error: function(error) {
                         console.error('CSV parsing error:', error);
@@ -1507,7 +1507,11 @@
 
             // Update all displays
             updateMetrics();
-            createAllCharts();
+            createOverviewChart();
+            createTrendsChart();
+            createPredictionsChart();
+            createOptimizationChart();
+            analyzeYesterday();
             createSupplierCards();
             generateRealAIInsights(); // Regenerate insights for filtered data
         }
