@@ -1,4 +1,11 @@
-<!DOCTYPE html>
+// CREATE ALL CHARTS
+        function createAllCharts() {
+            createOverviewChart();
+            createTrendsChart();
+            createPredictionsChart();
+            createOptimizationChart();
+            analyzeYesterday(); // Add yesterday analysis
+        }<!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
@@ -659,6 +666,7 @@
 
             <nav class="nav-tabs">
                 <button class="nav-tab active" data-tab="overview" onclick="switchTab('overview')">📊 Business Overview</button>
+                <button class="nav-tab" data-tab="yesterday" onclick="switchTab('yesterday')">📅 Yesterday</button>
                 <button class="nav-tab" data-tab="suppliers" onclick="switchTab('suppliers')">🎯 Smart Supplier Analysis</button>
                 <button class="nav-tab" data-tab="trends" onclick="switchTab('trends')">📈 Trend Intelligence</button>
                 <button class="nav-tab" data-tab="predictions" onclick="switchTab('predictions')">🔮 AI Predictions</button>
@@ -710,6 +718,75 @@
                     </div>
                     <div class="chart-wrapper">
                         <canvas id="overviewChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Yesterday Analysis Tab -->
+            <div id="yesterday" class="tab-content">
+                <div class="metrics-grid">
+                    <div class="metric-card blue">
+                        <div class="metric-title">Yesterday's Bookings</div>
+                        <div class="metric-value" id="yesterday-bookings">Loading...</div>
+                        <div class="metric-change" id="yesterday-bookings-change">
+                            Loading...
+                        </div>
+                    </div>
+                    
+                    <div class="metric-card green">
+                        <div class="metric-title">Yesterday's GMV</div>
+                        <div class="metric-value" id="yesterday-gmv">Loading...</div>
+                        <div class="metric-change" id="yesterday-gmv-change">
+                            Loading...
+                        </div>
+                    </div>
+                    
+                    <div class="metric-card purple">
+                        <div class="metric-title">Avg Booking Value</div>
+                        <div class="metric-value" id="yesterday-avg-value">Loading...</div>
+                        <div class="metric-change" id="yesterday-avg-change">
+                            Loading...
+                        </div>
+                    </div>
+                    
+                    <div class="metric-card orange">
+                        <div class="metric-title">Active Suppliers</div>
+                        <div class="metric-value" id="yesterday-suppliers">Loading...</div>
+                        <div class="metric-change" id="yesterday-suppliers-change">
+                            Loading...
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 2rem; margin-bottom: 2rem;">
+                    <div class="chart-container">
+                        <div class="chart-header">
+                            <h3 class="chart-title">Yesterday vs Day Before Comparison</h3>
+                        </div>
+                        <div class="chart-wrapper">
+                            <canvas id="yesterdayChart"></canvas>
+                        </div>
+                    </div>
+
+                    <div class="insights-card">
+                        <div class="insights-title" style="color: #3b82f6;">
+                            📊 Yesterday's Highlights
+                        </div>
+                        <div id="yesterday-highlights">
+                            <div class="loading">
+                                <div class="spinner"></div>
+                                Analyzing yesterday...
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="chart-container">
+                    <div class="chart-header">
+                        <h3 class="chart-title">Top Performers Yesterday</h3>
+                    </div>
+                    <div class="chart-wrapper">
+                        <canvas id="yesterdayTopPerformersChart"></canvas>
                     </div>
                 </div>
             </div>
@@ -791,6 +868,15 @@
     </div>
 
     <script>
+        // SECURITY CONFIGURATION
+        const DASHBOARD_CONFIG = {
+            requireAuth: true,
+            password: "TravClan@1234", // Change this to your desired password
+            sessionTimeout: 8 * 60 * 60 * 1000 // 8 hours
+        };
+
+        let isAuthenticated = false;
+
         // CORRECT COLUMN MAPPINGS
         const COLUMN_MAPPINGS = {
             name: 'name',
@@ -810,6 +896,123 @@
         let currentPredictionType = 'next-7-days';
         let currentOptimizationType = 'performance-matrix';
         let currentDateFilter = null;
+
+        // LOGIN SYSTEM
+        function showLoginScreen() {
+            const loginOverlay = document.createElement('div');
+            loginOverlay.style.cssText = `
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                z-index: 10000;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+            `;
+            
+            loginOverlay.innerHTML = `
+                <div style="
+                    background: white;
+                    padding: 3rem;
+                    border-radius: 2rem;
+                    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+                    text-align: center;
+                    max-width: 400px;
+                    width: 90%;
+                ">
+                    <h2 style="font-size: 1.5rem; font-weight: 700; color: #1e293b; margin-bottom: 0.5rem;">
+                        🔒 Secure Access Required
+                    </h2>
+                    <p style="color: #64748b; margin-bottom: 2rem;">
+                        Enter password to access the Analytics Dashboard
+                    </p>
+                    <div id="login-error" style="display: none; background: #fef2f2; color: #dc2626; padding: 0.75rem; border-radius: 0.5rem; margin-bottom: 1rem; font-size: 0.875rem;">
+                    </div>
+                    <input type="password" id="passwordInput" placeholder="Enter password" style="
+                        width: 100%;
+                        padding: 1rem;
+                        border: 2px solid #e2e8f0;
+                        border-radius: 0.75rem;
+                        font-size: 1rem;
+                        margin-bottom: 1rem;
+                        transition: all 0.2s;
+                    " onkeypress="if(event.key==='Enter') attemptLogin()">
+                    <button onclick="attemptLogin()" style="
+                        width: 100%;
+                        padding: 1rem;
+                        background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+                        color: white;
+                        border: none;
+                        border-radius: 0.75rem;
+                        font-size: 1rem;
+                        font-weight: 600;
+                        cursor: pointer;
+                        transition: all 0.2s;
+                    ">🚀 Access Dashboard</button>
+                    <p style="font-size: 0.75rem; color: #64748b; margin-top: 1rem;">
+                        Contact administrator for access
+                    </p>
+                </div>
+            `;
+            
+            document.body.appendChild(loginOverlay);
+        }
+
+        function attemptLogin() {
+            const password = document.getElementById('passwordInput').value;
+            const errorDiv = document.getElementById('login-error');
+            
+            if (password === DASHBOARD_CONFIG.password) {
+                isAuthenticated = true;
+                
+                // Store session
+                const session = {
+                    loginTime: Date.now(),
+                    expires: Date.now() + DASHBOARD_CONFIG.sessionTimeout
+                };
+                sessionStorage.setItem('dashboardSession', JSON.stringify(session));
+                
+                // Remove login overlay
+                document.querySelector('.login-overlay') && document.querySelector('.login-overlay').remove();
+                document.body.removeChild(document.body.lastChild);
+                
+                initializeDashboard();
+                showSuccess('Welcome to Analytics Dashboard!');
+            } else {
+                errorDiv.style.display = 'block';
+                errorDiv.textContent = '❌ Invalid password. Please try again.';
+                document.getElementById('passwordInput').value = '';
+            }
+        }
+
+        function checkSession() {
+            if (!DASHBOARD_CONFIG.requireAuth) return true;
+
+            const sessionData = sessionStorage.getItem('dashboardSession');
+            if (!sessionData) return false;
+
+            try {
+                const session = JSON.parse(sessionData);
+                if (Date.now() > session.expires) {
+                    sessionStorage.removeItem('dashboardSession');
+                    return false;
+                }
+                
+                isAuthenticated = true;
+                return true;
+            } catch (error) {
+                sessionStorage.removeItem('dashboardSession');
+                return false;
+            }
+        }
+
+        function logout() {
+            sessionStorage.removeItem('dashboardSession');
+            location.reload();
+        }
 
         // SMART LOAD AND PROCESS DATA
         async function loadBookingData() {
@@ -1404,12 +1607,278 @@
             document.getElementById('last-updated').textContent = 'Updated ' + new Date().toLocaleString();
         }
 
-        // CREATE ALL CHARTS
-        function createAllCharts() {
-            createOverviewChart();
-            createTrendsChart();
-            createPredictionsChart();
-            createOptimizationChart();
+        // YESTERDAY ANALYSIS
+        function analyzeYesterday() {
+            if (!processedData.dailyTotals || !processedData.dates.length) return;
+
+            const today = new Date();
+            const yesterday = new Date(today);
+            yesterday.setDate(today.getDate() - 1);
+            const dayBeforeYesterday = new Date(today);
+            dayBeforeYesterday.setDate(today.getDate() - 2);
+
+            const yesterdayStr = formatDateForData(yesterday);
+            const dayBeforeStr = formatDateForData(dayBeforeYesterday);
+
+            console.log('Looking for yesterday data:', yesterdayStr);
+            console.log('Looking for day before data:', dayBeforeStr);
+
+            // Get yesterday's data
+            const yesterdayData = processedData.dailyTotals[yesterdayStr] || { bookings: 0, gmv: 0 };
+            const dayBeforeData = processedData.dailyTotals[dayBeforeStr] || { bookings: 0, gmv: 0 };
+
+            // Calculate changes
+            const bookingsChange = dayBeforeData.bookings > 0 ? 
+                ((yesterdayData.bookings - dayBeforeData.bookings) / dayBeforeData.bookings * 100) : 0;
+            const gmvChange = dayBeforeData.gmv > 0 ? 
+                ((yesterdayData.gmv - dayBeforeData.gmv) / dayBeforeData.gmv * 100) : 0;
+
+            // Calculate average booking value
+            const yesterdayAvgValue = yesterdayData.bookings > 0 ? yesterdayData.gmv / yesterdayData.bookings : 0;
+            const dayBeforeAvgValue = dayBeforeData.bookings > 0 ? dayBeforeData.gmv / dayBeforeData.bookings : 0;
+            const avgValueChange = dayBeforeAvgValue > 0 ? 
+                ((yesterdayAvgValue - dayBeforeAvgValue) / dayBeforeAvgValue * 100) : 0;
+
+            // Count active suppliers
+            const yesterdaySuppliers = processedData.suppliers.filter(supplier => 
+                processedData.supplierData[supplier][yesterdayStr]?.bookings > 0
+            ).length;
+            const dayBeforeSuppliers = processedData.suppliers.filter(supplier => 
+                processedData.supplierData[supplier][dayBeforeStr]?.bookings > 0
+            ).length;
+            const suppliersChange = dayBeforeSuppliers > 0 ? 
+                ((yesterdaySuppliers - dayBeforeSuppliers) / dayBeforeSuppliers * 100) : 0;
+
+            // Update metrics
+            document.getElementById('yesterday-bookings').textContent = yesterdayData.bookings.toLocaleString();
+            document.getElementById('yesterday-gmv').textContent = '₹' + (yesterdayData.gmv / 10000000).toFixed(2) + 'Cr';
+            document.getElementById('yesterday-avg-value').textContent = '₹' + Math.round(yesterdayAvgValue).toLocaleString();
+            document.getElementById('yesterday-suppliers').textContent = yesterdaySuppliers;
+
+            // Update change indicators
+            updateChangeIndicator('yesterday-bookings-change', bookingsChange, 'vs day before');
+            updateChangeIndicator('yesterday-gmv-change', gmvChange, 'vs day before');
+            updateChangeIndicator('yesterday-avg-change', avgValueChange, 'vs day before');
+            updateChangeIndicator('yesterday-suppliers-change', suppliersChange, 'suppliers vs day before');
+
+            // Generate insights
+            generateYesterdayInsights(yesterdayStr, dayBeforeStr, {
+                yesterday: yesterdayData,
+                dayBefore: dayBeforeData,
+                bookingsChange,
+                gmvChange,
+                avgValueChange,
+                suppliersChange
+            });
+
+            // Create charts
+            createYesterdayCharts(yesterdayStr, dayBeforeStr);
+        }
+
+        function formatDateForData(date) {
+            // Try different date formats to match your data
+            const formats = [
+                date.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }),
+                date.toLocaleDateString('en-US'),
+                date.toISOString().split('T')[0],
+                date.getMonth() + 1 + '/' + date.getDate() + '/' + date.getFullYear(),
+                (date.getMonth() + 1) + '/' + date.getDate() + '/' + date.getFullYear()
+            ];
+
+            // Find which format exists in your data
+            for (const format of formats) {
+                if (processedData.dailyTotals[format]) {
+                    return format;
+                }
+            }
+
+            // If none found, return the first format
+            return formats[0];
+        }
+
+        function updateChangeIndicator(elementId, change, suffix) {
+            const element = document.getElementById(elementId);
+            const arrow = change >= 0 ? '↗' : '↘';
+            const className = change >= 0 ? 'metric-change positive' : 'metric-change negative';
+            
+            element.textContent = `${arrow} ${Math.abs(change).toFixed(1)}% ${suffix}`;
+            element.className = className;
+        }
+
+        function generateYesterdayInsights(yesterdayStr, dayBeforeStr, metrics) {
+            const container = document.getElementById('yesterday-highlights');
+            const insights = [];
+
+            // Performance insights
+            if (metrics.bookingsChange > 10) {
+                insights.push(`🚀 Strong day! ${metrics.bookingsChange.toFixed(1)}% more bookings than day before`);
+            } else if (metrics.bookingsChange < -10) {
+                insights.push(`📉 Slow day: ${Math.abs(metrics.bookingsChange).toFixed(1)}% fewer bookings`);
+            } else {
+                insights.push(`📊 Steady performance: ${Math.abs(metrics.bookingsChange).toFixed(1)}% change in bookings`);
+            }
+
+            // GMV insights
+            if (metrics.gmvChange > 15) {
+                insights.push(`💰 Revenue surge: +${metrics.gmvChange.toFixed(1)}% GMV increase`);
+            } else if (metrics.gmvChange < -15) {
+                insights.push(`⚠️ Revenue dip: ${Math.abs(metrics.gmvChange).toFixed(1)}% GMV decrease`);
+            }
+
+            // Average value insights
+            if (metrics.avgValueChange > 5) {
+                insights.push(`📈 Higher value bookings: +${metrics.avgValueChange.toFixed(1)}% avg value`);
+            } else if (metrics.avgValueChange < -5) {
+                insights.push(`📉 Lower value bookings: ${Math.abs(metrics.avgValueChange).toFixed(1)}% avg value drop`);
+            }
+
+            // Supplier insights
+            if (metrics.suppliersChange > 0) {
+                insights.push(`🎯 More suppliers active: +${metrics.suppliersChange.toFixed(1)}%`);
+            } else if (metrics.suppliersChange < -5) {
+                insights.push(`⚠️ Fewer suppliers active: ${Math.abs(metrics.suppliersChange).toFixed(1)}% decrease`);
+            }
+
+            // Top performer analysis
+            const topYesterday = findTopPerformerYesterday(yesterdayStr);
+            if (topYesterday) {
+                insights.push(`⭐ Top performer: ${topYesterday.name} with ${topYesterday.bookings} bookings`);
+            }
+
+            // Display insights
+            container.innerHTML = insights.length > 0 ? 
+                insights.map(insight => `<div style="padding: 0.5rem 0; border-bottom: 1px solid #f1f5f9;">${insight}</div>`).join('') :
+                '<div>No significant changes detected from previous day.</div>';
+        }
+
+        function findTopPerformerYesterday(yesterdayStr) {
+            let topPerformer = null;
+            let maxBookings = 0;
+
+            processedData.suppliers.forEach(supplier => {
+                const bookings = processedData.supplierData[supplier][yesterdayStr]?.bookings || 0;
+                if (bookings > maxBookings) {
+                    maxBookings = bookings;
+                    topPerformer = { name: supplier, bookings };
+                }
+            });
+
+            return topPerformer;
+        }
+
+        function createYesterdayCharts(yesterdayStr, dayBeforeStr) {
+            createYesterdayComparisonChart(yesterdayStr, dayBeforeStr);
+            createYesterdayTopPerformersChart(yesterdayStr);
+        }
+
+        function createYesterdayComparisonChart(yesterdayStr, dayBeforeStr) {
+            const ctx = document.getElementById('yesterdayChart').getContext('2d');
+            
+            if (charts.yesterday) {
+                charts.yesterday.destroy();
+            }
+
+            const yesterdayData = processedData.dailyTotals[yesterdayStr] || { bookings: 0, gmv: 0 };
+            const dayBeforeData = processedData.dailyTotals[dayBeforeStr] || { bookings: 0, gmv: 0 };
+
+            charts.yesterday = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Day Before Yesterday', 'Yesterday'],
+                    datasets: [
+                        {
+                            label: 'Bookings',
+                            data: [dayBeforeData.bookings, yesterdayData.bookings],
+                            backgroundColor: ['#94a3b8', '#3b82f6'],
+                            borderColor: ['#64748b', '#2563eb'],
+                            borderWidth: 1,
+                            yAxisID: 'y'
+                        },
+                        {
+                            label: 'GMV (₹ Lakhs)',
+                            data: [dayBeforeData.gmv / 100000, yesterdayData.gmv / 100000],
+                            backgroundColor: ['#a3a3a3', '#10b981'],
+                            borderColor: ['#737373', '#059669'],
+                            borderWidth: 1,
+                            yAxisID: 'y1'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: true }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            position: 'left',
+                            title: { display: true, text: 'Bookings' }
+                        },
+                        y1: {
+                            beginAtZero: true,
+                            position: 'right',
+                            title: { display: true, text: 'GMV (₹ Lakhs)' },
+                            grid: { drawOnChartArea: false }
+                        }
+                    }
+                }
+            });
+        }
+
+        function createYesterdayTopPerformersChart(yesterdayStr) {
+            const ctx = document.getElementById('yesterdayTopPerformersChart').getContext('2d');
+            
+            if (charts.yesterdayTop) {
+                charts.yesterdayTop.destroy();
+            }
+
+            // Get top 10 performers from yesterday
+            const topPerformers = processedData.suppliers
+                .map(supplier => ({
+                    name: supplier,
+                    bookings: processedData.supplierData[supplier][yesterdayStr]?.bookings || 0,
+                    gmv: processedData.supplierData[supplier][yesterdayStr]?.gmv || 0
+                }))
+                .filter(s => s.bookings > 0)
+                .sort((a, b) => b.bookings - a.bookings)
+                .slice(0, 10);
+
+            if (topPerformers.length === 0) {
+                ctx.font = '16px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('No data available for yesterday', ctx.canvas.width/2, ctx.canvas.height/2);
+                return;
+            }
+
+            charts.yesterdayTop = new Chart(ctx, {
+                type: 'horizontalBar',
+                data: {
+                    labels: topPerformers.map(s => s.name),
+                    datasets: [{
+                        label: 'Yesterday\'s Bookings',
+                        data: topPerformers.map(s => s.bookings),
+                        backgroundColor: topPerformers.map((_, i) => {
+                            const colors = ['#10b981', '#3b82f6', '#8b5cf6', '#f59e0b', '#ef4444'];
+                            return colors[i % colors.length];
+                        }),
+                        borderColor: '#ffffff',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        x: { beginAtZero: true },
+                        y: { ticks: { font: { size: 10 } } }
+                    }
+                }
+            });
         }
 
         function createOverviewChart() {
