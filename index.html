@@ -871,7 +871,7 @@
         // SECURITY CONFIGURATION
         const DASHBOARD_CONFIG = {
             requireAuth: true,
-            password: "analytics2025!", // Change this to your desired password
+            password: "TravClan@1234", // Change this to your desired password
             sessionTimeout: 8 * 60 * 60 * 1000 // 8 hours
         };
 
@@ -899,7 +899,13 @@
 
         // LOGIN SYSTEM
         function showLoginScreen() {
+            console.log('Showing login screen');
+            
+            // Hide the main dashboard content first
+            document.querySelector('.main-content').style.display = 'none';
+            
             const loginOverlay = document.createElement('div');
+            loginOverlay.className = 'login-overlay';
             loginOverlay.style.cssText = `
                 position: fixed;
                 top: 0;
@@ -953,7 +959,7 @@
                         transition: all 0.2s;
                     ">🚀 Access Dashboard</button>
                     <p style="font-size: 0.75rem; color: #64748b; margin-top: 1rem;">
-                        Contact administrator for access
+                        Default password: analytics2025!
                     </p>
                 </div>
             `;
@@ -965,7 +971,10 @@
             const password = document.getElementById('passwordInput').value;
             const errorDiv = document.getElementById('login-error');
             
+            console.log('Login attempt with password:', password);
+            
             if (password === DASHBOARD_CONFIG.password) {
+                console.log('Login successful');
                 isAuthenticated = true;
                 
                 // Store session
@@ -975,13 +984,15 @@
                 };
                 sessionStorage.setItem('dashboardSession', JSON.stringify(session));
                 
-                // Remove login overlay
-                document.querySelector('.login-overlay') && document.querySelector('.login-overlay').remove();
-                document.body.removeChild(document.body.lastChild);
+                // Remove login overlay and show main content
+                const overlay = document.querySelector('.login-overlay');
+                if (overlay) overlay.remove();
+                document.querySelector('.main-content').style.display = 'block';
                 
                 initializeDashboard();
                 showSuccess('Welcome to Analytics Dashboard!');
             } else {
+                console.log('Login failed');
                 errorDiv.style.display = 'block';
                 errorDiv.textContent = '❌ Invalid password. Please try again.';
                 document.getElementById('passwordInput').value = '';
